@@ -15,7 +15,7 @@ import Header from '../componentes/Header';
 import {
   carregarConfiguracaoNotificacao,
   atualizarConfiguracaoNotificacao,
-} from '../armazenamento/armazenamentoLocal';
+} from '../armazenamento/armazenamentoSQLite';
 import {
   inicializarNotificacoes,
   atualizarNotificacoes,
@@ -139,7 +139,7 @@ const ConfiguracoesTela = () => {
       [chave]: !prev[chave]
     }));
     
-    // Aqui você pode salvar no AsyncStorage se necessário
+    // Configuração salva automaticamente no SQLite
     Alert.alert('Configuração', `${chave} ${configuracaoApp[chave] ? 'desativado' : 'ativado'}`);
   };
 

@@ -19,10 +19,12 @@ import {
   carregarTransacoesFinanceiras, 
   excluirTransacaoFinanceira,
   salvarHistoricoMensal,
-  carregarHistoricoMensal
-} from '../armazenamento/armazenamentoLocal';
+  carregarHistoricoFinanceiro
+} from '../armazenamento/armazenamentoSQLite';
+import { useDatabaseContext } from '../contextos/DatabaseContext';
 
 const FinancasTela = () => {
+  const { bancoInicializado } = useDatabaseContext();
   const [transacoes, setTransacoes] = useState([]);
   const [modalVisivel, setModalVisivel] = useState(false);
   const [modalHistoricoVisivel, setModalHistoricoVisivel] = useState(false);
@@ -41,14 +43,16 @@ const FinancasTela = () => {
   };
 
   useEffect(() => {
-    carregarDados();
-  }, []);
+    if (bancoInicializado) {
+      carregarDados();
+    }
+  }, [bancoInicializado]);
 
   const carregarDados = async () => {
     try {
       setAtualizando(true);
       const transacoesCarregadas = await carregarTransacoesFinanceiras();
-      const historicoCarregado = await carregarHistoricoMensal();
+      const historicoCarregado = await carregarHistoricoFinanceiro();
       setTransacoes(transacoesCarregadas);
       setHistoricoMeses(historicoCarregado || []);
     } catch (error) {
@@ -549,7 +553,7 @@ return (
 
                     <TextInput
                         style={estilosGlobais.input}
-                        placeholder="Valor (ex: 29,90)"
+                        placeholder="Valor da transação"
                         placeholderTextColor={cores.textoTerciario}
                         value={valor}
                         onChangeText={setValor}

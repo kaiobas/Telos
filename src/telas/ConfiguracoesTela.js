@@ -21,7 +21,7 @@ import {
   atualizarConfiguracaoApp,
   exportarTodosDados,
   limparTodosDados,
-} from '../armazenamento/armazenamentoLocal';
+} from '../armazenamento/armazenamentoSQLite';
 import {
   inicializarNotificacoes,
   atualizarNotificacoes,
@@ -175,7 +175,7 @@ const ConfiguracoesTela = () => {
     
     setConfiguracaoApp(novaConfig);
     
-    // Salvar no AsyncStorage
+    // Salvar no SQLite
     const sucesso = await atualizarConfiguracaoApp(novaConfig);
     
     if (sucesso) {
@@ -813,7 +813,7 @@ const ConfiguracoesTela = () => {
               <Text style={estilos.labelInput}>Título</Text>
               <TextInput
                 style={estilosGlobais.input}
-                placeholder="Ex: Bom dia"
+                placeholder="Adicione um título para o lembrete"
                 placeholderTextColor={cores.textoTerciario}
                 value={novoHorario.titulo}
                 onChangeText={(text) => setNovoHorario(prev => ({ ...prev, titulo: text }))}
@@ -824,7 +824,7 @@ const ConfiguracoesTela = () => {
               <Text style={estilos.labelInput}>Mensagem</Text>
               <TextInput
                 style={[estilosGlobais.input, estilos.inputMensagem]}
-                placeholder="Ex: Que tal começar o dia planejando suas atividades?"
+                placeholder="Adicione uma mensagem para o lembrete"
                 placeholderTextColor={cores.textoTerciario}
                 value={novoHorario.mensagem}
                 onChangeText={(text) => setNovoHorario(prev => ({ ...prev, mensagem: text }))}

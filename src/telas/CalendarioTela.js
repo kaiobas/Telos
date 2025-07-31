@@ -20,10 +20,12 @@ import {
   carregarEventosCalendario, 
   excluirEventoCalendario,
   obterEventosPorData 
-} from '../armazenamento/armazenamentoLocal';
+} from '../armazenamento/armazenamentoSQLite';
 import { agendarNotificacaoEvento } from '../servicos/notificacoes';
+import { useDatabaseContext } from '../contextos/DatabaseContext';
 
 const CalendarioTela = () => {
+  const { bancoInicializado, carregando: carregandoBanco } = useDatabaseContext();
   const [dataSelecionada, setDataSelecionada] = useState('');
   const [eventos, setEventos] = useState([]);
   const [eventosDia, setEventosDia] = useState([]);
@@ -35,8 +37,10 @@ const CalendarioTela = () => {
   const [todosEventos, setTodosEventos] = useState([]);
 
   useEffect(() => {
-    carregarDados();
-  }, []);
+    if (bancoInicializado) {
+      carregarDados();
+    }
+  }, [bancoInicializado]);
 
   useEffect(() => {
     if (dataSelecionada) {

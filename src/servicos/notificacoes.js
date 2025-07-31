@@ -12,7 +12,7 @@ import { Platform } from 'react-native';
 import { 
   salvarConfiguracaoNotificacao, 
   carregarConfiguracaoNotificacao 
-} from '../armazenamento/armazenamentoLocal';
+} from '../armazenamento/armazenamentoSQLite';
 
 // Configurar comportamento das notificações
 export const configurarNotificationHandler = () => {

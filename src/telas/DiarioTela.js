@@ -19,9 +19,11 @@ import {
   carregarEntradasDiario, 
   excluirEntradaDiario,
   atualizarEntradaDiario 
-} from '../armazenamento/armazenamentoLocal';
+} from '../armazenamento/armazenamentoSQLite';
+import { useDatabaseContext } from '../contextos/DatabaseContext';
 
 const DiarioTela = () => {
+  const { bancoInicializado } = useDatabaseContext();
   const [entradas, setEntradas] = useState([]);
   const [modalVisivel, setModalVisivel] = useState(false);
   const [modalLeitura, setModalLeitura] = useState(false);
@@ -35,8 +37,10 @@ const DiarioTela = () => {
   const [atualizando, setAtualizando] = useState(false);
 
   useEffect(() => {
-    carregarDados();
-  }, []);
+    if (bancoInicializado) {
+      carregarDados();
+    }
+  }, [bancoInicializado]);
 
   const carregarDados = async () => {
     try {

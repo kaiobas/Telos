@@ -9,7 +9,7 @@ import {
   salvarEventoCalendario,
   carregarEventosCalendario,
   obterEventosPorData
-} from '../armazenamento/armazenamentoLocal';
+} from '../armazenamento/armazenamentoSQLite';
 
 class ServicoIA {
   constructor() {

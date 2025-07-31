@@ -9,7 +9,7 @@ Este é um aplicativo React Native construído com Expo, focado em produtividade
 ### Tecnologias
 - React Native com Expo
 - Navegação com React Navigation (Bottom Tabs)
-- Armazenamento local com AsyncStorage
+- Armazenamento local com SQLite (expo-sqlite)
 - Biblioteca de calendário: react-native-calendars
 - Ícones: @expo/vector-icons (Ionicons)
 
@@ -17,7 +17,7 @@ Este é um aplicativo React Native construído com Expo, focado em produtividade
 - `src/telas/` - Componentes de tela principais
 - `src/componentes/` - Componentes reutilizáveis
 - `src/navegacao/` - Configuração de navegação
-- `src/armazenamento/` - Funções de armazenamento local
+- `src/armazenamento/` - Funções de armazenamento SQLite
 - `src/estilos/` - Arquivos de estilo e tema
 - `src/servicos/` - Serviços auxiliares
 
@@ -53,7 +53,7 @@ Este é um aplicativo React Native construído com Expo, focado em produtividade
 
 ### Padrões de Código
 
-- **Armazenamento**: Todas as funções de persistência estão em `armazenamentoLocal.js`
+- **Armazenamento**: Todas as funções de persistência estão em `armazenamentoSQLite.js` com banco de dados SQLite
 - **Estilos**: Uso de `estilosGlobais.js` para consistência visual
 - **Cores**: Centralizadas em `cores.js` para fácil manutenção
 - **Nomenclatura**: Nomes de arquivos e pastas em português
