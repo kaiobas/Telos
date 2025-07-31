@@ -21,6 +21,7 @@ import {
   excluirEventoCalendario,
   obterEventosPorData 
 } from '../armazenamento/armazenamentoLocal';
+import { agendarNotificacaoEvento } from '../servicos/notificacoes';
 
 const CalendarioTela = () => {
   const [dataSelecionada, setDataSelecionada] = useState('');
@@ -91,6 +92,13 @@ const CalendarioTela = () => {
       const sucesso = await salvarEventoCalendario(novoEvento);
       
       if (sucesso) {
+        // Agendar notificação para o evento (1 hora antes)
+        try {
+          await agendarNotificacaoEvento(novoEvento, 60);
+        } catch (notifError) {
+          console.log('Notificação do evento não foi agendada:', notifError.message);
+        }
+        
         await carregarDados();
         setTituloEvento('');
         setDescricaoEvento('');

@@ -8,6 +8,8 @@ const CHAVES = {
   CALENDARIO: '@calendario_eventos',
   MEMORIA_IA: '@telos_memoria_ia',
   CONVERSAS_IA: '@telos_conversas_ia',
+  NOTIFICACOES: '@telos_notificacoes_config',
+  CONFIGURACOES_APP: '@telos_configuracoes_app',
 };
 
 // Funções genéricas de armazenamento
@@ -508,6 +510,107 @@ export const excluirHistoricoMensal = async () => {
     return await removerDados(CHAVES.FINANCAS_HISTORICO);
   } catch (error) {
     console.error('Erro ao excluir histórico mensal:', error);
+    return false;
+  }
+};
+
+// Funções específicas para Notificações
+export const salvarConfiguracaoNotificacao = async (configuracao) => {
+  try {
+    return await salvarDados(CHAVES.NOTIFICACOES, configuracao);
+  } catch (error) {
+    console.error('Erro ao salvar configuração de notificações:', error);
+    return false;
+  }
+};
+
+export const carregarConfiguracaoNotificacao = async () => {
+  try {
+    return await carregarDados(CHAVES.NOTIFICACOES);
+  } catch (error) {
+    console.error('Erro ao carregar configuração de notificações:', error);
+    return null;
+  }
+};
+
+export const atualizarConfiguracaoNotificacao = async (novaConfiguracao) => {
+  try {
+    return await salvarDados(CHAVES.NOTIFICACOES, novaConfiguracao);
+  } catch (error) {
+    console.error('Erro ao atualizar configuração de notificações:', error);
+    return false;
+  }
+};
+
+export const excluirConfiguracaoNotificacao = async () => {
+  try {
+    return await removerDados(CHAVES.NOTIFICACOES);
+  } catch (error) {
+    console.error('Erro ao excluir configuração de notificações:', error);
+    return false;
+  }
+};
+
+// Funções específicas para Configurações do App
+export const salvarConfiguracaoApp = async (configuracao) => {
+  try {
+    return await salvarDados(CHAVES.CONFIGURACOES_APP, configuracao);
+  } catch (error) {
+    console.error('Erro ao salvar configuração do app:', error);
+    return false;
+  }
+};
+
+export const carregarConfiguracaoApp = async () => {
+  try {
+    return await carregarDados(CHAVES.CONFIGURACOES_APP);
+  } catch (error) {
+    console.error('Erro ao carregar configuração do app:', error);
+    return null;
+  }
+};
+
+export const atualizarConfiguracaoApp = async (novaConfiguracao) => {
+  try {
+    return await salvarDados(CHAVES.CONFIGURACOES_APP, novaConfiguracao);
+  } catch (error) {
+    console.error('Erro ao atualizar configuração do app:', error);
+    return false;
+  }
+};
+
+// Função para exportar todos os dados (backup)
+export const exportarTodosDados = async () => {
+  try {
+    const dados = {
+      eventos: await carregarEventosCalendario(),
+      entradas: await carregarEntradasDiario(),
+      transacoes: await carregarTransacoesFinanceiras(),
+      notificacoes: await carregarConfiguracaoNotificacao(),
+      configuracoes: await carregarConfiguracaoApp(),
+      versao: '1.0.0',
+      dataExportacao: new Date().toISOString()
+    };
+    
+    console.log('📄 Dados exportados:', JSON.stringify(dados, null, 2));
+    return dados;
+  } catch (error) {
+    console.error('Erro ao exportar dados:', error);
+    return null;
+  }
+};
+
+// Função para limpar todos os dados
+export const limparTodosDados = async () => {
+  try {
+    const chaves = Object.values(CHAVES);
+    const promessas = chaves.map(chave => removerDados(chave));
+    await Promise.all(promessas);
+    
+    console.log('🗑️ Todos os dados foram removidos');
+    return true;
+  } catch (error) {
+    console.error('Erro ao limpar dados:', error);
     return false;
   }
 };

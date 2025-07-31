@@ -8,6 +8,7 @@ import cores from '../estilos/cores';
 import CalendarioTela from '../telas/CalendarioTela';
 import DiarioTela from '../telas/DiarioTela';
 import FinancasTela from '../telas/FinancasTela';
+import ConfiguracoesTela from '../telas/ConfiguracoesTela';
 
 const Tab = createBottomTabNavigator();
 
@@ -25,6 +26,8 @@ return (
                         nomeIcone = focused ? 'book' : 'book-outline';
                     } else if (route.name === 'Financas') {
                         nomeIcone = focused ? 'wallet' : 'wallet-outline';
+                    } else if (route.name === 'Configuracoes') {
+                        nomeIcone = focused ? 'settings' : 'settings-outline';
                     }
 
                     return <Ionicons name={nomeIcone} size={size} color={color} />;
@@ -75,6 +78,13 @@ return (
                 component={FinancasTela}
                 options={{
                     tabBarLabel: 'Finanças',
+                }}
+            />
+            <Tab.Screen 
+                name="Configuracoes" 
+                component={ConfiguracoesTela}
+                options={{
+                    tabBarLabel: 'Configurações',
                 }}
             />
         </Tab.Navigator>

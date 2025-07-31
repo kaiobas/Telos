@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -8,9 +8,26 @@ import NavegadorPrincipal from './src/navegacao/NavegadorPrincipal';
 import BotaoIA from './src/componentes/BotaoIA';
 import SplashTela from './src/telas/SplashTela';
 import cores from './src/estilos/cores';
+import { inicializarNotificacoes } from './src/servicos/notificacoes';
 
 export default function App() {
   const [mostrarSplash, setMostrarSplash] = useState(true);
+
+  useEffect(() => {
+    // Inicializar notificações quando o app carregar
+    const iniciarNotificacoes = async () => {
+      try {
+        await inicializarNotificacoes();
+        console.log('Sistema de notificações inicializado');
+      } catch (error) {
+        console.log('Notificações não foram inicializadas:', error.message);
+      }
+    };
+
+    if (!mostrarSplash) {
+      iniciarNotificacoes();
+    }
+  }, [mostrarSplash]);
 
   const finalizarSplash = () => {
     setMostrarSplash(false);
