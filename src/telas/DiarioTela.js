@@ -254,7 +254,7 @@ return (
             {modoSelecao ? (
                 <>
                     <View>
-                        <Text style={estilosGlobais.titulo}>📓 Diário</Text>
+                        <Text style={estilosGlobais.titulo}>Diário</Text>
                         <Text style={estilos.textoSelecao}>
                             {entradasSelecionadas.size} de {entradas.length} selecionada(s)
                         </Text>
@@ -288,7 +288,7 @@ return (
                 </>
             ) : (
                 <>
-                    <Text style={estilosGlobais.titulo}>📓 Diário</Text>
+                    <Text style={estilosGlobais.titulo}>Diário</Text>
                     <View style={estilos.botoesAcoes}>
                         {entradas.length > 0 && (
                             <TouchableOpacity
@@ -389,6 +389,7 @@ return (
                     </Text>
                 </View>
             )}
+            <View style={{ height: 32 }} />
         </ScrollView>
 
         {/* Modal para Nova Entrada */}

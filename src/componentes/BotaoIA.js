@@ -26,7 +26,7 @@ const BotaoIA = () => {
     {
       id: '1',
       tipo: 'ia',
-      texto: 'E aí, Kaio! 👋\n\nSou Telos, seu assistente pessoal. Estou aqui para te ajudar a manter tudo organizado e no controle.\n\n--O que posso fazer por você:--\n📓 Registrar ideias, reflexões e anotações no diário\n💰 Acompanhar seus gastos e receitas\n📊 Te dar insights sobre suas finanças e progresso\n\nSempre direto ao ponto. Qual é o plano para hoje?',
+      texto: 'Opa! Como posso te ajudar agora?',
       timestamp: new Date().toISOString(),
     }
   ]);
@@ -230,6 +230,7 @@ const BotaoIA = () => {
                   ]}>
                     {formatarHorario(item.timestamp)}
                   </Text>
+                  <View style={{ height: 6 }} />
                 </View>
               ))}
               
@@ -240,6 +241,7 @@ const BotaoIA = () => {
                   <Text style={estilos.textoCarregamento}>IA pensando...</Text>
                 </View>
               )}
+              <View style={{ height: 32 }} />
             </ScrollView>
 
             {/* Área de Input */}

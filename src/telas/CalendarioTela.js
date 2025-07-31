@@ -31,6 +31,7 @@ const CalendarioTela = () => {
   const [descricaoEvento, setDescricaoEvento] = useState('');
   const [carregando, setCarregando] = useState(true);
   const [atualizando, setAtualizando] = useState(false);
+  const [todosEventos, setTodosEventos] = useState([]);
 
   useEffect(() => {
     carregarDados();
@@ -47,6 +48,10 @@ const CalendarioTela = () => {
       setAtualizando(true);
       const eventosCarregados = await carregarEventosCalendario();
       setEventos(eventosCarregados);
+      
+      // Organizar todos os eventos por proximidade
+      const eventosOrdenados = organizarEventosPorProximidade(eventosCarregados);
+      setTodosEventos(eventosOrdenados);
     } catch (error) {
       console.error('Erro ao carregar eventos:', error);
       Alert.alert('Erro', 'Não foi possível carregar os eventos.');
@@ -128,6 +133,36 @@ const CalendarioTela = () => {
     );
   };
 
+  const organizarEventosPorProximidade = (eventos) => {
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    
+    return eventos
+      .map(evento => {
+        const dataEvento = new Date(evento.data + 'T00:00:00');
+        return {
+          ...evento,
+          dataObj: dataEvento,
+          diasRestantes: Math.ceil((dataEvento - hoje) / (1000 * 60 * 60 * 24))
+        };
+      })
+      .sort((a, b) => a.dataObj - b.dataObj);
+  };
+
+  const ehEventoDeHoje = (dataEvento) => {
+    const hoje = new Date();
+    const evento = new Date(dataEvento + 'T00:00:00');
+    return hoje.toDateString() === evento.toDateString();
+  };
+
+  const formatarDataRelativa = (diasRestantes) => {
+    if (diasRestantes === 0) return 'Hoje';
+    if (diasRestantes === 1) return 'Amanhã';
+    if (diasRestantes === -1) return 'Ontem';
+    if (diasRestantes < 0) return `${Math.abs(diasRestantes)} dias atrás`;
+    return `Em ${diasRestantes} dias`;
+  };
+
   const obterMarcacoes = () => {
     const marcacoes = {};
     
@@ -135,8 +170,18 @@ const CalendarioTela = () => {
       const data = evento.data ? evento.data.split('T')[0] : '';
       if (data) {
         marcacoes[data] = {
-          marked: true,
-          dotColor: cores.primaria,
+          customStyles: {
+            container: {
+              backgroundColor: 'transparent',
+              borderWidth: 2,
+              borderColor: cores.primaria,
+              borderRadius: 16,
+            },
+            text: {
+              color: cores.texto,
+              fontWeight: 'bold',
+            },
+          },
         };
       }
     });
@@ -146,6 +191,18 @@ const CalendarioTela = () => {
         ...marcacoes[dataSelecionada],
         selected: true,
         selectedColor: cores.primaria,
+        customStyles: {
+          container: {
+            backgroundColor: cores.primaria,
+            borderWidth: 2,
+            borderColor: cores.primaria,
+            borderRadius: 16,
+          },
+          text: {
+            color: cores.fundo,
+            fontWeight: 'bold',
+          },
+        },
       };
     }
 
@@ -178,7 +235,7 @@ return (
         >
             {/* Cabeçalho da Seção */}
             <View style={estilos.cabecalho}>
-                <Text style={estilosGlobais.titulo}>📆 Calendário</Text>
+                <Text style={estilosGlobais.titulo}>Calendário</Text>
                 <TouchableOpacity
                     style={estilos.botaoAdicionar}
                     onPress={() => setModalVisivel(true)}
@@ -209,61 +266,67 @@ return (
                     }}
                     onDayPress={(day) => setDataSelecionada(day.dateString)}
                     markedDates={obterMarcacoes()}
+                    markingType={'custom'}
                     firstDay={0}
                     enableSwipeMonths={true}
                 />
             </View>
 
-            {/* Eventos do Dia Selecionado */}
-            {dataSelecionada && (
-                <View style={estilosGlobais.cartao}>
-                    <Text style={estilosGlobais.subtitulo}>
-                        {formatarData(dataSelecionada)}
-                    </Text>
+            {/* Todos os Eventos Ordenados por Proximidade */}
+                  <View style={estilosGlobais.cartao}>
+                    <Text style={estilosGlobais.subtitulo}>📋 Próximos Eventos</Text>
                     
-                    {eventosDia.length > 0 ? (
-                        eventosDia.map((evento) => (
-                            <View key={evento.id} style={estilos.itemEvento}>
-                                <View style={estilos.conteudoEvento}>
-                                    <Text style={estilos.tituloEvento}>{evento.titulo}</Text>
-                                    {evento.descricao && (
-                                        <Text style={estilos.descricaoEvento}>{evento.descricao}</Text>
-                                    )}
-                                </View>
-                                <TouchableOpacity
-                                    style={estilos.botaoExcluir}
-                                    onPress={() => excluirEvento(evento.id)}
-                                >
-                                    <Ionicons name="trash-outline" size={20} color={cores.primaria} />
-                                </TouchableOpacity>
+                    {todosEventos.length > 0 ? (
+                      todosEventos.map((evento) => (
+                        <View 
+                          key={evento.id} 
+                          style={[
+                            estilos.itemEventoGeral,
+                            ehEventoDeHoje(evento.data) && estilos.eventoHoje
+                          ]}
+                        >
+                          <View style={estilos.conteudoEventoGeral}>
+                            <View style={estilos.linhaTitulo}>
+                              <Text style={estilos.tituloEventoGeral}>{evento.titulo}</Text>
+                              <Text style={[
+                                estilos.tempoRelativo,
+                                ehEventoDeHoje(evento.data) && estilos.tempoRelativoHoje
+                              ]}>
+                                {formatarDataRelativa(evento.diasRestantes)}
+                              </Text>
                             </View>
-                        ))
-                    ) : (
-                        <View style={estilos.semEventos}>
-                            <Ionicons name="calendar-outline" size={48} color={cores.textoTerciario} />
-                            <Text style={estilos.textoSemEventos}>
-                                Nenhum evento para este dia
+                            {evento.descricao && (
+                              <Text style={estilos.descricaoEventoGeral}>{evento.descricao}</Text>
+                            )}
+                            <Text style={estilos.dataEventoGeral}>
+                              📅 {formatarData(evento.data)}
                             </Text>
-                            <Text style={estilos.dicaSemEventos}>
-                                Toque no botão + para adicionar um evento
-                            </Text>
+                          </View>
+                          <TouchableOpacity
+                            style={estilos.botaoExcluir}
+                            onPress={() => excluirEvento(evento.id)}
+                          >
+                            <Ionicons name="trash-outline" size={20} color={cores.primaria} />
+                          </TouchableOpacity>
                         </View>
+                      ))
+                    ) : (
+                      <View style={estilos.semEventos}>
+                        <Ionicons name="calendar-outline" size={48} color={cores.textoTerciario} />
+                        <Text style={estilos.textoSemEventos}>
+                          Nenhum evento agendado
+                        </Text>
+                        <Text style={estilos.dicaSemEventos}>
+                          Selecione uma data e adicione seu primeiro evento
+                        </Text>
+                      </View>
                     )}
-                </View>
-            )}
+                  </View>
+                  {/* Espaço extra no final do scroll */}
+                  <View style={{ height: 32 }} />
+                </ScrollView>
 
-            {/* Dica inicial */}
-            {!dataSelecionada && (
-                <View style={estilos.dicaInicial}>
-                    <Ionicons name="information-circle-outline" size={24} color={cores.textoSecundario} />
-                    <Text style={estilos.textoDica}>
-                        Selecione uma data no calendário para ver ou adicionar eventos
-                    </Text>
-                </View>
-            )}
-        </ScrollView>
-
-        {/* Modal para Adicionar Evento */}
+                {/* Modal para Adicionar Evento */}
         <Modal
             visible={modalVisivel}
             transparent={true}
@@ -455,6 +518,66 @@ const estilos = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 20,
+  },
+
+  // Eventos gerais
+  itemEventoGeral: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: cores.borda,
+    borderRadius: 8,
+    marginVertical: 4,
+  },
+
+  eventoHoje: {
+    borderWidth: 2,
+    borderColor: '#007AFF', // Azul do iOS
+    backgroundColor: 'rgba(0, 122, 255, 0.05)',
+  },
+
+  conteudoEventoGeral: {
+    flex: 1,
+  },
+
+  linhaTitulo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+
+  tituloEventoGeral: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: cores.texto,
+    flex: 1,
+    marginRight: 12,
+  },
+
+  descricaoEventoGeral: {
+    fontSize: 14,
+    color: cores.textoSecundario,
+    lineHeight: 18,
+    marginBottom: 6,
+  },
+
+  dataEventoGeral: {
+    fontSize: 13,
+    color: cores.textoTerciario,
+  },
+
+  tempoRelativo: {
+    fontSize: 13,
+    color: cores.textoSecundario,
+    fontWeight: '500',
+  },
+
+  tempoRelativoHoje: {
+    color: '#007AFF',
+    fontWeight: '600',
   },
 });
 

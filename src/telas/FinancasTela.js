@@ -338,7 +338,7 @@ return (
         {/* Cabeçalho da Seção */}
         <View style={estilos.cabecalho}>
             <View>
-                <Text style={estilosGlobais.titulo}>💸 Finanças</Text>
+                <Text style={estilosGlobais.titulo}>Finanças</Text>
                 <Text style={estilos.mesAtual}>{mesAtual}</Text>
             </View>
             <View style={estilos.botoesAcoes}>
@@ -581,6 +581,7 @@ return (
                                 </Text>
                             </TouchableOpacity>
                         ))}
+                        
                     </ScrollView>
 
                     <View style={estilos.botoesModal}>
@@ -693,6 +694,7 @@ return (
                                 </Text>
                             </View>
                         )}
+                        <View style={{ height: 32 }} />
                     </ScrollView>
                 </View>
             </View>
