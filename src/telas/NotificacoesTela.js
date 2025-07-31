@@ -139,7 +139,7 @@ const ConfiguracoesTela = () => {
       [chave]: !prev[chave]
     }));
     
-    // Configuração salva automaticamente no SQLite
+    // Aqui você pode salvar no AsyncStorage se necessário
     Alert.alert('Configuração', `${chave} ${configuracaoApp[chave] ? 'desativado' : 'ativado'}`);
   };
 

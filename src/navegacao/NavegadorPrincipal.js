@@ -77,7 +77,7 @@ return (
                 name="Financas" 
                 component={FinancasTela}
                 options={{
-                    tabBarLabel: 'Finanças',
+                    tabBarLabel: 'Carteira',
                 }}
             />
             <Tab.Screen 

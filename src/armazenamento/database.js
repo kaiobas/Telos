@@ -5,10 +5,26 @@ const DATABASE_NAME = 'telos.db';
 
 // Instância do banco de dados
 let database = null;
+let inicializando = false;
 
 // Inicializar banco de dados
 export const inicializarDatabase = async () => {
+  // Evitar múltiplas inicializações simultâneas
+  if (inicializando) {
+    console.log('Banco de dados já está sendo inicializado, aguardando...');
+    while (inicializando) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    return database !== null;
+  }
+
+  if (database) {
+    console.log('Banco de dados já está inicializado');
+    return true;
+  }
+
   try {
+    inicializando = true;
     database = await SQLite.openDatabaseAsync(DATABASE_NAME);
     
     // Habilitar chaves estrangeiras
@@ -19,14 +35,18 @@ export const inicializarDatabase = async () => {
     return true;
   } catch (error) {
     console.error('Erro ao inicializar banco de dados:', error);
+    database = null;
     return false;
+  } finally {
+    inicializando = false;
   }
 };
 
 // Obter instância do banco
 export const getDatabase = () => {
   if (!database) {
-    throw new Error('Banco de dados não foi inicializado. Chame inicializarDatabase() primeiro.');
+    console.error('Banco de dados não foi inicializado. Chame inicializarDatabase() primeiro.');
+    return null;
   }
   return database;
 };
@@ -164,34 +184,51 @@ const criarTabelas = async () => {
   }
 };
 
+// Função para aguardar inicialização completa
+const aguardarInicializacao = async () => {
+  let tentativas = 0;
+  const maxTentativas = 50; // 5 segundos no máximo
+  
+  while ((!database || inicializando) && tentativas < maxTentativas) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+    tentativas++;
+  }
+  
+  if (!database) {
+    throw new Error('Banco de dados não foi inicializado após aguardar');
+  }
+  
+  return database;
+};
+
 // Função para executar consultas preparadas
 export const executarQuery = async (query, params = []) => {
   try {
-    const db = getDatabase();
+    const db = await aguardarInicializacao();
     const resultado = await db.getAllAsync(query, params);
     return resultado;
   } catch (error) {
     console.error('Erro ao executar query:', error);
-    throw error;
+    return [];
   }
 };
 
 // Função para executar comandos (INSERT, UPDATE, DELETE)
 export const executarComando = async (query, params = []) => {
   try {
-    const db = getDatabase();
+    const db = await aguardarInicializacao();
     const resultado = await db.runAsync(query, params);
     return resultado;
   } catch (error) {
     console.error('Erro ao executar comando:', error);
-    throw error;
+    return { changes: 0, lastInsertRowId: null };
   }
 };
 
 // Função para iniciar transação
 export const iniciarTransacao = async (callback) => {
-  const db = getDatabase();
   try {
+    const db = await aguardarInicializacao();
     await db.withTransactionAsync(callback);
   } catch (error) {
     console.error('Erro na transação:', error);

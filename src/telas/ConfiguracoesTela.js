@@ -175,7 +175,7 @@ const ConfiguracoesTela = () => {
     
     setConfiguracaoApp(novaConfig);
     
-    // Salvar no SQLite
+    // Salvar no AsyncStorage
     const sucesso = await atualizarConfiguracaoApp(novaConfig);
     
     if (sucesso) {

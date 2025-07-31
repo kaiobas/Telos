@@ -18,8 +18,12 @@ import {
   salvarTransacaoFinanceira, 
   carregarTransacoesFinanceiras, 
   excluirTransacaoFinanceira,
-  salvarHistoricoMensal,
-  carregarHistoricoFinanceiro
+  excluirTransacaoSemAtualizarHistorico,
+  limparTransacoesEAtualizarHistorico,
+  carregarHistoricoFinanceiro,
+  preservarHistoricoMensal,
+  excluirRegistroHistorico as excluirRegistroHistoricoSQLite,
+  limparTodoHistoricoFinanceiro
 } from '../armazenamento/armazenamentoSQLite';
 import { useDatabaseContext } from '../contextos/DatabaseContext';
 
@@ -28,6 +32,7 @@ const FinancasTela = () => {
   const [transacoes, setTransacoes] = useState([]);
   const [modalVisivel, setModalVisivel] = useState(false);
   const [modalHistoricoVisivel, setModalHistoricoVisivel] = useState(false);
+  const [modalSeletorMesVisivel, setModalSeletorMesVisivel] = useState(false);
   const [descricao, setDescricao] = useState('');
   const [valor, setValor] = useState('');
   const [tipo, setTipo] = useState('receita'); // 'receita' ou 'despesa'
@@ -35,25 +40,64 @@ const FinancasTela = () => {
   const [carregando, setCarregando] = useState(true);
   const [atualizando, setAtualizando] = useState(false);
   const [historicoMeses, setHistoricoMeses] = useState([]);
-  const [mesAtual, setMesAtual] = useState(new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }));
+  
+  // Controle do mês/ano selecionado para transações
+  const [anoSelecionado, setAnoSelecionado] = useState(new Date().getFullYear());
+  const [mesSelecionado, setMesSelecionado] = useState(new Date().getMonth() + 1);
+  
+  // Controle do filtro do histórico
+  const [anoFiltroHistorico, setAnoFiltroHistorico] = useState(new Date().getFullYear());
+  const [mesFiltroHistorico, setMesFiltroHistorico] = useState(new Date().getMonth() + 1);
 
   const categorias = {
     receita: ['Salário', 'Freelance', 'Investimentos', 'Vendas', 'Outros'],
     despesa: ['Alimentação', 'Transporte', 'Moradia', 'Saúde', 'Entretenimento', 'Educação', 'Compras', 'Outros']
   };
 
+  const nomesMeses = [
+    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+  ];
+
   useEffect(() => {
     if (bancoInicializado) {
-      carregarDados();
+      // Aguardar um pouco para garantir que o banco está completamente pronto
+      setTimeout(carregarDados, 500);
     }
   }, [bancoInicializado]);
 
   const carregarDados = async () => {
+    if (!bancoInicializado) {
+      console.log('Banco não inicializado, pulando carregamento');
+      return;
+    }
+    
     try {
       setAtualizando(true);
-      const transacoesCarregadas = await carregarTransacoesFinanceiras();
+      
+      // Aguardar um pouco antes de fazer as consultas
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      // Carregar transações do mês/ano selecionado
+      const todasTransacoes = await carregarTransacoesFinanceiras();
+      console.log(`🔍 Filtrando transações para ${mesSelecionado}/${anoSelecionado}`);
+      console.log(`📊 Total de transações encontradas: ${todasTransacoes.length}`);
+      
+      const transacoesDoMes = todasTransacoes.filter(transacao => {
+        const dataTransacao = new Date(transacao.data + 'T12:00:00'); // Adicionar horário para evitar problemas de fuso
+        const anoTransacao = dataTransacao.getFullYear();
+        const mesTransacao = dataTransacao.getMonth() + 1; // getMonth() retorna 0-11, então +1
+        
+        console.log(`📅 Transação: ${transacao.data} -> Ano: ${anoTransacao}, Mês: ${mesTransacao}`);
+        
+        return anoTransacao === anoSelecionado && mesTransacao === mesSelecionado;
+      });
+      
+      console.log(`✅ Transações filtradas para ${mesSelecionado}/${anoSelecionado}: ${transacoesDoMes.length}`);
+      
       const historicoCarregado = await carregarHistoricoFinanceiro();
-      setTransacoes(transacoesCarregadas);
+      
+      setTransacoes(transacoesDoMes);
       setHistoricoMeses(historicoCarregado || []);
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
@@ -83,11 +127,19 @@ const FinancasTela = () => {
     try {
       const valorNumerico = parseFloat(valor.replace(',', '.'));
       
+      // Criar data para o mês/ano selecionado de forma mais explícita
+      // Formato: YYYY-MM-DD (sempre dia 15 para evitar problemas de fuso horário)
+      const mesFormatado = mesSelecionado.toString().padStart(2, '0');
+      const dataFormatada = `${anoSelecionado}-${mesFormatado}-15`;
+      
+      console.log(`📅 Criando transação para: ${dataFormatada} (Mês selecionado: ${mesSelecionado})`);
+      
       const novaTransacao = {
         descricao: descricao.trim(),
         valor: valorNumerico,
         tipo,
         categoria,
+        data: dataFormatada
       };
 
       const sucesso = await salvarTransacaoFinanceira(novaTransacao);
@@ -96,7 +148,7 @@ const FinancasTela = () => {
         await carregarDados();
         limparCampos();
         setModalVisivel(false);
-        Alert.alert('Sucesso', 'Transação adicionada com sucesso!');
+        Alert.alert('Sucesso', `Transação adicionada para ${nomesMeses[mesSelecionado - 1]} ${anoSelecionado}!`);
       } else {
         Alert.alert('Erro', 'Não foi possível salvar a transação.');
       }
@@ -168,55 +220,43 @@ const FinancasTela = () => {
     );
   };
 
-  const passarProximoMes = () => {
+  const salvarMesAtual = () => {
     if (transacoes.length === 0) {
-      Alert.alert('Aviso', 'Não há transações para arquivar no histórico mensal.');
+      Alert.alert('Aviso', 'Não há transações para salvar no histórico mensal.');
       return;
     }
 
     Alert.alert(
-      'Fechar Mês',
-      `Tem certeza que deseja fechar o mês de ${mesAtual}? Todas as transações atuais serão arquivadas no histórico e a tela será zerada.`,
+      'Salvar Mês',
+      `Deseja salvar as informações de ${nomesMeses[mesSelecionado - 1]} ${anoSelecionado} no histórico?`,
       [
         { text: 'Cancelar', style: 'cancel' },
         { 
-          text: 'Confirmar', 
+          text: 'Salvar', 
           style: 'default',
           onPress: async () => {
             try {
               const { totalReceitas, totalDespesas, saldo } = calcularResumo();
               
-              // Criar registro do mês
-              const registroMes = {
-                mes: mesAtual,
-                data: new Date().toISOString(),
+              console.log(`💾 Salvando histórico para ${mesSelecionado}/${anoSelecionado}`);
+              console.log(`📊 Resumo - Receitas: ${totalReceitas}, Despesas: ${totalDespesas}, Saldo: ${saldo}`);
+              
+              // Salvar o histórico do mês selecionado
+              const sucesso = await preservarHistoricoMensal(anoSelecionado, mesSelecionado, {
                 totalReceitas,
                 totalDespesas,
-                saldo,
-                transacoes: [...transacoes],
-                metaEconomia: 0, // Pode ser implementado depois
-                economiaPorcentagem: 0
-              };
-
-              // Salvar no histórico
-              const novoHistorico = [registroMes, ...historicoMeses];
-              await salvarHistoricoMensal(novoHistorico);
-
-              // Limpar todas as transações atuais
-              for (const transacao of transacoes) {
-                await excluirTransacaoFinanceira(transacao.id);
+                saldo
+              });
+              
+              if (sucesso) {
+                await carregarDados();
+                Alert.alert('Sucesso', `Histórico de ${nomesMeses[mesSelecionado - 1]} ${anoSelecionado} salvo! Saldo: ${formatarMoeda(saldo)}`);
+              } else {
+                Alert.alert('Aviso', 'Já existe um histórico salvo para este mês/ano.');
               }
-
-              // Atualizar mês atual
-              const proximaData = new Date();
-              proximaData.setMonth(proximaData.getMonth() + 1);
-              setMesAtual(proximaData.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }));
-
-              await carregarDados();
-              Alert.alert('Sucesso', `Mês arquivado com sucesso! Saldo final: ${formatarMoeda(saldo)}`);
             } catch (error) {
-              console.error('Erro ao arquivar mês:', error);
-              Alert.alert('Erro', 'Ocorreu um erro ao arquivar o mês.');
+              console.error('Erro ao salvar mês:', error);
+              Alert.alert('Erro', 'Ocorreu um erro ao salvar o histórico.');
             }
           }
         }
@@ -225,7 +265,18 @@ const FinancasTela = () => {
   };
 
   const excluirRegistroHistorico = (index) => {
+    console.log('Tentando excluir registro no índice:', index);
+    console.log('Array historicoMeses:', historicoMeses);
+    console.log('Tamanho do array:', historicoMeses.length);
+    
     const registroParaExcluir = historicoMeses[index];
+    console.log('Registro encontrado:', registroParaExcluir);
+    
+    if (!registroParaExcluir) {
+      console.log('Registro não encontrado no índice:', index);
+      Alert.alert('Erro', 'Registro não encontrado.');
+      return;
+    }
     
     Alert.alert(
       'Confirmar Exclusão',
@@ -237,17 +288,20 @@ const FinancasTela = () => {
           style: 'destructive',
           onPress: async () => {
             try {
-              // Remover o registro do histórico
-              const novoHistorico = historicoMeses.filter((_, i) => i !== index);
-              await salvarHistoricoMensal(novoHistorico);
+              console.log('Excluindo registro:', registroParaExcluir.ano, registroParaExcluir.mesNumerico);
               
-              // Atualizar estado local
-              setHistoricoMeses(novoHistorico);
+              // Excluir registro específico do histórico SQLite
+              const sucesso = await excluirRegistroHistoricoSQLite(registroParaExcluir.ano, registroParaExcluir.mesNumerico);
               
-              Alert.alert('Sucesso', 'Registro do histórico excluído com sucesso!');
+              if (sucesso) {
+                await carregarDados();
+                Alert.alert('Sucesso', 'Registro do histórico excluído com sucesso!');
+              } else {
+                Alert.alert('Erro', 'Não foi possível excluir o registro do histórico.');
+              }
             } catch (error) {
               console.error('Erro ao excluir registro do histórico:', error);
-              Alert.alert('Erro', 'Ocorreu um erro ao excluir o registro.');
+              Alert.alert('Erro', 'Ocorreu um erro ao excluir o registro do histórico.');
             }
           }
         }
@@ -271,9 +325,15 @@ const FinancasTela = () => {
           style: 'destructive',
           onPress: async () => {
             try {
-              await salvarHistoricoMensal([]);
-              setHistoricoMeses([]);
-              Alert.alert('Sucesso', 'Todo o histórico foi excluído com sucesso!');
+              // Limpar todo o histórico financeiro do SQLite
+              const sucesso = await limparTodoHistoricoFinanceiro();
+              
+              if (sucesso) {
+                await carregarDados();
+                Alert.alert('Sucesso', 'Todo o histórico foi limpo com sucesso!');
+              } else {
+                Alert.alert('Aviso', 'Nenhum registro foi encontrado para limpar.');
+              }
             } catch (error) {
               console.error('Erro ao limpar histórico:', error);
               Alert.alert('Erro', 'Ocorreu um erro ao limpar o histórico.');
@@ -342,8 +402,7 @@ return (
         {/* Cabeçalho da Seção */}
         <View style={estilos.cabecalho}>
             <View>
-                <Text style={estilosGlobais.titulo}>Finanças</Text>
-                <Text style={estilos.mesAtual}>{mesAtual}</Text>
+                <Text style={estilosGlobais.titulo}>Carteira</Text>
             </View>
             <View style={estilos.botoesAcoes}>
                 <TouchableOpacity
@@ -355,9 +414,9 @@ return (
                 
                 <TouchableOpacity
                     style={estilos.botaoSecundario}
-                    onPress={passarProximoMes}
+                    onPress={salvarMesAtual}
                 >
-                    <Ionicons name="arrow-forward-outline" size={20} color={cores.primaria} />
+                    <Ionicons name="save-outline" size={20} color={cores.primaria} />
                 </TouchableOpacity>
                 
                 {transacoes.length > 0 && (
@@ -375,6 +434,20 @@ return (
                     <Ionicons name="add" size={24} color={cores.fundo} />
                 </TouchableOpacity>
             </View>
+        </View>
+        
+        {/* Seletor de Mês/Ano para Transações */}
+        <View style={estilos.seletorContainer}>
+          <Text style={estilos.tituloSecao}>Mês/Ano das Transações</Text>
+          <TouchableOpacity 
+            style={estilos.botaoSeletor}
+            onPress={() => setModalSeletorMesVisivel(true)}
+          >
+            <Text style={estilos.textoSeletor}>
+              {nomesMeses[mesSelecionado - 1]} {anoSelecionado}
+            </Text>
+            <Ionicons name="chevron-down" size={20} color="#ffffff" />
+          </TouchableOpacity>
         </View>
 
         <ScrollView 
@@ -615,6 +688,90 @@ return (
             </View>
         </Modal>
 
+        {/* Modal Seletor de Mês/Ano */}
+        <Modal
+            visible={modalSeletorMesVisivel}
+            transparent={true}
+            animationType="slide"
+            onRequestClose={() => setModalSeletorMesVisivel(false)}
+        >
+            <View style={estilos.modalContainer}>
+                <View style={estilos.modalConteudo}>
+                    <View style={estilos.cabecalhoModal}>
+                        <Text style={estilosGlobais.subtitulo}>Selecionar Mês/Ano</Text>
+                        <TouchableOpacity onPress={() => setModalSeletorMesVisivel(false)}>
+                            <Ionicons name="close" size={24} color={cores.primaria} />
+                        </TouchableOpacity>
+                    </View>
+
+                    <ScrollView style={estilos.containerSeletor}>
+                        {/* Seletor de Ano */}
+                        <Text style={estilos.labelSeletor}>Ano:</Text>
+                        <View style={estilos.linhaSeletor}>
+                            <TouchableOpacity 
+                                style={estilos.botaoSeta}
+                                onPress={() => setAnoSelecionado(anoSelecionado - 1)}
+                            >
+                                <Ionicons name="chevron-back" size={24} color={cores.primaria} />
+                            </TouchableOpacity>
+                            
+                            <View style={estilos.containerValor}>
+                                <Text style={estilos.valorSeletor}>{anoSelecionado}</Text>
+                            </View>
+                            
+                            <TouchableOpacity 
+                                style={estilos.botaoSeta}
+                                onPress={() => setAnoSelecionado(anoSelecionado + 1)}
+                            >
+                                <Ionicons name="chevron-forward" size={24} color={cores.primaria} />
+                            </TouchableOpacity>
+                        </View>
+
+                        {/* Seletor de Mês */}
+                        <Text style={estilos.labelSeletor}>Mês:</Text>
+                        <View style={estilos.gridMeses}>
+                            {nomesMeses.map((nomeMes, index) => (
+                                <TouchableOpacity
+                                    key={index}
+                                    style={[
+                                        estilos.botaoMes,
+                                        mesSelecionado === index + 1 && estilos.botaoMesAtivo
+                                    ]}
+                                    onPress={() => setMesSelecionado(index + 1)}
+                                >
+                                    <Text style={[
+                                        estilos.textoMes,
+                                        mesSelecionado === index + 1 && estilos.textoMesAtivo
+                                    ]}>
+                                        {nomeMes.substring(0, 3)}
+                                    </Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+                    </ScrollView>
+
+                    <View style={estilos.botoesModal}>
+                        <TouchableOpacity
+                            style={estilos.botaoCancelar}
+                            onPress={() => setModalSeletorMesVisivel(false)}
+                        >
+                            <Text style={estilos.textoCancelar}>Cancelar</Text>
+                        </TouchableOpacity>
+                        
+                        <TouchableOpacity
+                            style={estilos.botaoConfirmar}
+                            onPress={() => {
+                                setModalSeletorMesVisivel(false);
+                                carregarDados();
+                            }}
+                        >
+                            <Text style={estilosGlobais.textoBotao}>Confirmar</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </View>
+        </Modal>
+
         {/* Modal do Histórico Mensal */}
         <Modal
             visible={modalHistoricoVisivel}
@@ -725,13 +882,6 @@ const estilos = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-  },
-
-  mesAtual: {
-    fontSize: 12,
-    color: cores.textoTerciario,
-    marginTop: 2,
-    textTransform: 'capitalize',
   },
 
   botaoSecundario: {
@@ -1177,6 +1327,141 @@ const estilos = StyleSheet.create({
     marginTop: 8,
     textAlign: 'center',
     lineHeight: 20,
+  },
+
+  // Estilos do Seletor de Mês/Ano
+  seletorContainer: {
+    backgroundColor: cores.fundoSecundario,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: cores.borda,
+  },
+
+  tituloSecao: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff',
+    marginBottom: 8,
+  },
+
+  botaoSeletor: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: cores.fundoTerciario,
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: cores.borda,
+  },
+
+  textoSeletor: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#ffffff',
+  },
+
+  containerSeletor: {
+    maxHeight: 400,
+  },
+
+  labelSeletor: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff',
+    marginBottom: 12,
+    marginTop: 16,
+  },
+
+  linhaSeletor: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+
+  botaoSeta: {
+    padding: 12,
+    backgroundColor: cores.fundoTerciario,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: cores.borda,
+  },
+
+  containerValor: {
+    flex: 1,
+    alignItems: 'center',
+    marginHorizontal: 20,
+  },
+
+  valorSeletor: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#ffffff',
+  },
+
+  gridMeses: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    justifyContent: 'space-between',
+  },
+
+  botaoMes: {
+    width: '22%',
+    aspectRatio: 1,
+    backgroundColor: cores.fundoTerciario,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: cores.borda,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+
+  botaoMesAtivo: {
+    backgroundColor: cores.primaria,
+    borderColor: cores.primaria,
+  },
+
+  textoMes: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#ffffff',
+  },
+
+  textoMesAtivo: {
+    color: cores.textoBotao,
+    fontWeight: '600',
+  },
+
+  botaoCancelar: {
+    flex: 1,
+    backgroundColor: cores.fundoSecundario,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: cores.borda,
+  },
+
+  textoCancelar: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+
+  botaoConfirmar: {
+    flex: 1,
+    backgroundColor: cores.primaria,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginLeft: 8,
   },
 });
 

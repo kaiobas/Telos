@@ -25,7 +25,7 @@ import { agendarNotificacaoEvento } from '../servicos/notificacoes';
 import { useDatabaseContext } from '../contextos/DatabaseContext';
 
 const CalendarioTela = () => {
-  const { bancoInicializado, carregando: carregandoBanco } = useDatabaseContext();
+  const { bancoInicializado } = useDatabaseContext();
   const [dataSelecionada, setDataSelecionada] = useState('');
   const [eventos, setEventos] = useState([]);
   const [eventosDia, setEventosDia] = useState([]);

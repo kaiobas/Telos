@@ -217,9 +217,34 @@ export const excluirTransacaoFinanceira = async (id) => {
   }
 };
 
+// Função para excluir transação sem atualizar histórico (para fechamento de mês)
+export const excluirTransacaoSemAtualizarHistorico = async (id) => {
+  try {
+    const resultado = await executarComando('DELETE FROM financas WHERE id = ?', [id]);
+    return resultado.changes > 0;
+  } catch (error) {
+    console.error('Erro ao excluir transação financeira:', error);
+    return false;
+  }
+};
+
+// Função para limpar transações e forçar atualização do histórico (apenas para meses NÃO fechados)
+export const limparTransacoesEAtualizarHistorico = async (ano, mes) => {
+  try {
+    console.log(`🧹 Limpando transações e forçando atualização para ${mes}/${ano}...`);
+    await forcarAtualizacaoHistorico(ano, mes);
+    return true;
+  } catch (error) {
+    console.error('Erro ao limpar e atualizar histórico:', error);
+    return false;
+  }
+};
+
 // Função para atualizar histórico mensal
 const atualizarHistoricoMensal = async (ano, mes) => {
   try {
+    console.log(`Atualizando histórico para ${mes}/${ano}...`);
+    
     // Calcular totais do mês
     const receitas = await executarQuery(
       'SELECT COALESCE(SUM(valor), 0) as total FROM financas WHERE tipo = "receita" AND strftime("%Y", data) = ? AND strftime("%m", data) = ?',
@@ -235,15 +260,55 @@ const atualizarHistoricoMensal = async (ano, mes) => {
     const totalDespesas = parseFloat(despesas[0].total) || 0;
     const saldo = totalReceitas - totalDespesas;
     
+    console.log(`Totais calculados - Receitas: ${totalReceitas}, Despesas: ${totalDespesas}, Saldo: ${saldo}`);
+    
     // Inserir ou atualizar histórico
-    await executarComando(
+    const resultado = await executarComando(
       `INSERT OR REPLACE INTO financas_historico 
        (ano, mes, totalReceitas, totalDespesas, saldo, dataCriacao, dataModificacao) 
        VALUES (?, ?, ?, ?, ?, COALESCE((SELECT dataCriacao FROM financas_historico WHERE ano = ? AND mes = ?), ?), ?)`,
       [ano, mes, totalReceitas, totalDespesas, saldo, ano, mes, new Date().toISOString(), new Date().toISOString()]
     );
+    
+    console.log(`Histórico atualizado. Resultado:`, resultado);
   } catch (error) {
     console.error('Erro ao atualizar histórico mensal:', error);
+  }
+};
+
+// Função para forçar recálculo do histórico (usada apenas quando necessário)
+const forcarAtualizacaoHistorico = async (ano, mes) => {
+  try {
+    console.log(`🔄 FORÇANDO atualização do histórico para ${mes}/${ano}...`);
+    
+    // Calcular totais do mês
+    const receitas = await executarQuery(
+      'SELECT COALESCE(SUM(valor), 0) as total FROM financas WHERE tipo = "receita" AND strftime("%Y", data) = ? AND strftime("%m", data) = ?',
+      [ano.toString(), mes.toString().padStart(2, '0')]
+    );
+    
+    const despesas = await executarQuery(
+      'SELECT COALESCE(SUM(valor), 0) as total FROM financas WHERE tipo = "despesa" AND strftime("%Y", data) = ? AND strftime("%m", data) = ?',
+      [ano.toString(), mes.toString().padStart(2, '0')]
+    );
+    
+    const totalReceitas = parseFloat(receitas[0].total) || 0;
+    const totalDespesas = parseFloat(despesas[0].total) || 0;
+    const saldo = totalReceitas - totalDespesas;
+    
+    console.log(`Totais FORÇADOS - Receitas: ${totalReceitas}, Despesas: ${totalDespesas}, Saldo: ${saldo}`);
+    
+    // Forçar atualização
+    const resultado = await executarComando(
+      `INSERT OR REPLACE INTO financas_historico 
+       (ano, mes, totalReceitas, totalDespesas, saldo, dataCriacao, dataModificacao) 
+       VALUES (?, ?, ?, ?, ?, COALESCE((SELECT dataCriacao FROM financas_historico WHERE ano = ? AND mes = ?), ?), ?)`,
+      [ano, mes, totalReceitas, totalDespesas, saldo, ano, mes, new Date().toISOString(), new Date().toISOString()]
+    );
+    
+    console.log(`🔄 Histórico FORÇADO. Resultado:`, resultado);
+  } catch (error) {
+    console.error('Erro ao forçar atualização do histórico:', error);
   }
 };
 
@@ -252,12 +317,30 @@ export const carregarHistoricoFinanceiro = async () => {
     const historico = await executarQuery(
       'SELECT * FROM financas_historico ORDER BY ano DESC, mes DESC'
     );
-    return historico.map(item => ({
-      ...item,
-      totalReceitas: parseFloat(item.totalReceitas) || 0,
-      totalDespesas: parseFloat(item.totalDespesas) || 0,
-      saldo: parseFloat(item.saldo) || 0
-    }));
+    
+    console.log('Histórico bruto do banco:', historico);
+    
+    const mesesNomes = [
+      'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+      'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+    ];
+    
+    const historicoFormatado = historico
+      // Filtrar apenas registros que tenham dados válidos (incluir registros zerados)
+      .filter(item => item && item.ano && item.mes)
+      .map(item => ({
+        ...item,
+        ano: item.ano,
+        mesNumerico: item.mes,
+        mes: `${mesesNomes[item.mes - 1]} ${item.ano}`,
+        totalReceitas: parseFloat(item.totalReceitas) || 0,
+        totalDespesas: parseFloat(item.totalDespesas) || 0,
+        saldo: parseFloat(item.saldo) || 0
+      }));
+    
+    console.log('Histórico formatado e filtrado:', historicoFormatado);
+    
+    return historicoFormatado;
   } catch (error) {
     console.error('Erro ao carregar histórico financeiro:', error);
     return [];
@@ -286,6 +369,126 @@ export const carregarHistoricoMensal = async (ano, mes) => {
   } catch (error) {
     console.error('Erro ao carregar histórico mensal:', error);
     return null;
+  }
+};
+
+// Função para preservar histórico do mês antes de limpeza
+export const preservarHistoricoMensal = async (ano, mes, totaisCalculados = null) => {
+  try {
+    console.log(`📅 Preservando histórico para ${mes}/${ano}...`);
+    
+    // Verificar se já existe um registro para este mês/ano
+    const registroExistente = await executarQuery(
+      'SELECT * FROM financas_historico WHERE ano = ? AND mes = ?',
+      [ano, mes]
+    );
+    
+    if (registroExistente.length > 0) {
+      console.log(`⚠️ Já existe histórico para ${mes}/${ano} - NÃO sobrescrevendo`);
+      console.log(`Registro existente:`, registroExistente[0]);
+      return false; // Não permitir sobrescrever
+    }
+    
+    // Se foram passados totais pré-calculados, usar eles SEMPRE (prioridade máxima)
+    let totalReceitas, totalDespesas, saldo;
+    
+    if (totaisCalculados) {
+      totalReceitas = totaisCalculados.totalReceitas;
+      totalDespesas = totaisCalculados.totalDespesas;
+      saldo = totaisCalculados.saldo;
+      console.log(`💰 Usando totais pré-calculados - Receitas: ${totalReceitas}, Despesas: ${totalDespesas}, Saldo: ${saldo}`);
+    } else {
+      // Verificar se há transações para o mês
+      const transacoes = await executarQuery(
+        'SELECT * FROM financas WHERE strftime("%Y", data) = ? AND strftime("%m", data) = ?',
+        [ano.toString(), mes.toString().padStart(2, '0')]
+      );
+      
+      console.log(`Encontradas ${transacoes.length} transações para preservar`);
+      
+      // Calcular totais das transações existentes
+      const receitas = await executarQuery(
+        'SELECT COALESCE(SUM(valor), 0) as total FROM financas WHERE tipo = "receita" AND strftime("%Y", data) = ? AND strftime("%m", data) = ?',
+        [ano.toString(), mes.toString().padStart(2, '0')]
+      );
+      
+      const despesas = await executarQuery(
+        'SELECT COALESCE(SUM(valor), 0) as total FROM financas WHERE tipo = "despesa" AND strftime("%Y", data) = ? AND strftime("%m", data) = ?',
+        [ano.toString(), mes.toString().padStart(2, '0')]
+      );
+      
+      totalReceitas = parseFloat(receitas[0].total) || 0;
+      totalDespesas = parseFloat(despesas[0].total) || 0;
+      saldo = totalReceitas - totalDespesas;
+      console.log(`💰 Totais calculados no banco - Receitas: ${totalReceitas}, Despesas: ${totalDespesas}, Saldo: ${saldo}`);
+    }
+    
+    // Salvar histórico APENAS como novo registro (INSERT sem REPLACE)
+    const resultado = await executarComando(
+      `INSERT INTO financas_historico 
+       (ano, mes, totalReceitas, totalDespesas, saldo, dataCriacao, dataModificacao) 
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [ano, mes, totalReceitas, totalDespesas, saldo, new Date().toISOString(), new Date().toISOString()]
+    );
+    
+    // Verificar se foi salvo corretamente
+    const historicoSalvo = await executarQuery(
+      'SELECT * FROM financas_historico WHERE ano = ? AND mes = ?',
+      [ano, mes]
+    );
+    
+    console.log(`✅ NOVO histórico criado para ${mes}/${ano}:`, historicoSalvo);
+    console.log(`✅ Resultado da inserção:`, resultado);
+    
+    return true;
+  } catch (error) {
+    console.error('Erro ao preservar histórico mensal:', error);
+    return false;
+  }
+};
+
+// Função para excluir registro específico do histórico
+export const excluirRegistroHistorico = async (ano, mes) => {
+  try {
+    console.log(`Tentando excluir histórico para ano: ${ano}, mes: ${mes}`);
+    console.log(`Tipos dos parâmetros - ano: ${typeof ano}, mes: ${typeof mes}`);
+    
+    // Verificar se o registro existe antes de excluir
+    const registroExistente = await executarQuery(
+      'SELECT * FROM financas_historico WHERE ano = ? AND mes = ?',
+      [ano, mes]
+    );
+    
+    console.log(`Registro encontrado para exclusão:`, registroExistente);
+    
+    if (registroExistente.length === 0) {
+      console.log('Nenhum registro encontrado para exclusão');
+      return false;
+    }
+    
+    const resultado = await executarComando(
+      'DELETE FROM financas_historico WHERE ano = ? AND mes = ?',
+      [ano, mes]
+    );
+    
+    console.log(`Resultado da exclusão:`, resultado);
+    console.log(`Registros afetados: ${resultado.changes}`);
+    
+    return resultado.changes > 0;
+  } catch (error) {
+    console.error('Erro ao excluir registro do histórico:', error);
+    return false;
+  }
+};
+
+// Função para limpar todo o histórico
+export const limparTodoHistoricoFinanceiro = async () => {
+  try {
+    const resultado = await executarComando('DELETE FROM financas_historico');
+    return resultado.changes > 0;
+  } catch (error) {
+    console.error('Erro ao limpar histórico financeiro:', error);
+    return false;
   }
 };
 

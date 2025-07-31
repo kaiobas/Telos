@@ -219,7 +219,7 @@ const BotaoIA = () => {
                     <View style={estilos.acoesExecutadas}>
                       {item.acoes.map((acao, index) => (
                         <Text key={index} style={estilos.textoAcao}>
-                          {acao.result.sucesso ? '✅' : '❌'} {acao.function_name === 'addDiaryEntry' ? 'Diário' : 'Finanças'}
+                          {acao.result.sucesso ? '✅' : '❌'} {acao.function_name === 'addDiaryEntry' ? 'Diário' : 'Carteira'}
                         </Text>
                       ))}
                     </View>
