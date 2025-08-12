@@ -286,7 +286,7 @@ return (
 
             {/* Todos os Eventos Ordenados por Proximidade */}
                   <View style={estilosGlobais.cartao}>
-                    <Text style={estilosGlobais.subtitulo}>📋 Próximos Eventos</Text>
+                    <Text style={estilosGlobais.subtitulo}> Próximos Eventos</Text>
                     
                     {todosEventos.length > 0 ? (
                       todosEventos.map((evento) => (
@@ -376,7 +376,7 @@ return (
 
                     {dataSelecionada && (
                         <Text style={estilos.dataEvento}>
-                            📅 {formatarData(dataSelecionada)}
+                            {formatarData(dataSelecionada)}
                         </Text>
                     )}
 

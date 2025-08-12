@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import financasEstilos from '../estilos/financasEstilos';
 import {
   View,
   Text,
@@ -366,14 +367,45 @@ const FinancasTela = () => {
   };
 
   const formatarData = (dataString) => {
-    const data = new Date(dataString);
-    return data.toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    if (!dataString) return 'Data não disponível';
+    
+    try {
+      // Se é uma string ISO completa (com T), usar diretamente
+      if (dataString.includes('T')) {
+        const data = new Date(dataString);
+        return data.toLocaleDateString('pt-BR', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      }
+      
+      // Se é apenas data (YYYY-MM-DD), criar data local para evitar problemas de UTC
+      if (dataString.length === 10) {
+        const [ano, mes, dia] = dataString.split('-');
+        const dataLocal = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
+        return dataLocal.toLocaleDateString('pt-BR', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        });
+      }
+      
+      // Fallback para outros formatos
+      const data = new Date(dataString);
+      return data.toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      console.error('Erro ao formatar data:', error);
+      return 'Data inválida';
+    }
   };
 
   const obterIconeTransacao = (tipo, categoria) => {
@@ -400,20 +432,20 @@ return (
         <Header />
         
         {/* Cabeçalho da Seção */}
-        <View style={estilos.cabecalho}>
+        <View style={financasEstilos.cabecalho}>
             <View>
                 <Text style={estilosGlobais.titulo}>Carteira</Text>
             </View>
-            <View style={estilos.botoesAcoes}>
+            <View style={financasEstilos.botoesAcoes}>
                 <TouchableOpacity
-                    style={estilos.botaoSecundario}
+                    style={financasEstilos.botaoSecundario}
                     onPress={() => setModalHistoricoVisivel(true)}
                 >
                     <Ionicons name="calendar-outline" size={20} color={cores.primaria} />
                 </TouchableOpacity>
                 
                 <TouchableOpacity
-                    style={estilos.botaoSecundario}
+                    style={financasEstilos.botaoSecundario}
                     onPress={salvarMesAtual}
                 >
                     <Ionicons name="save-outline" size={20} color={cores.primaria} />
@@ -421,14 +453,14 @@ return (
                 
                 {transacoes.length > 0 && (
                     <TouchableOpacity
-                        style={estilos.botaoLimparTudo}
+                        style={financasEstilos.botaoLimparTudo}
                         onPress={limparTodasTransacoes}
                     >
                         <Ionicons name="trash-outline" size={20} color={'#ff4444'} />
-                    </TouchableOpacity>
+                     </TouchableOpacity>
                 )}
                 <TouchableOpacity
-                    style={estilos.botaoAdicionar}
+                    style={financasEstilos.botaoAdicionar}
                     onPress={() => setModalVisivel(true)}
                 >
                     <Ionicons name="add" size={24} color={cores.fundo} />
@@ -437,13 +469,13 @@ return (
         </View>
         
         {/* Seletor de Mês/Ano para Transações */}
-        <View style={estilos.seletorContainer}>
-          <Text style={estilos.tituloSecao}>Mês/Ano das Transações</Text>
+        <View style={financasEstilos.seletorContainer}>
+          <Text style={financasEstilos.tituloSecao}>Mês/Ano das Transações</Text>
           <TouchableOpacity 
-            style={estilos.botaoSeletor}
+            style={financasEstilos.botaoSeletor}
             onPress={() => setModalSeletorMesVisivel(true)}
           >
-            <Text style={estilos.textoSeletor}>
+            <Text style={financasEstilos.textoSeletor}>
               {nomesMeses[mesSelecionado - 1]} {anoSelecionado}
             </Text>
             <Ionicons name="chevron-down" size={20} color="#ffffff" />
@@ -451,7 +483,7 @@ return (
         </View>
 
         <ScrollView 
-            style={estilos.container}
+            style={financasEstilos.container}
             refreshControl={
                 <RefreshControl
                     refreshing={atualizando}
@@ -463,33 +495,33 @@ return (
             {/* Resumo Financeiro */}
             <View style={estilosGlobais.cartaoElevado}>
                 <Text style={estilosGlobais.subtitulo}>Resumo</Text>
-                
-                <View style={estilos.itemResumo}>
-                    <View style={estilos.indicadorReceita} />
-                    <Text style={estilos.labelResumo}>Receitas</Text>
-                    <Text style={[estilos.valorResumo, estilos.valorReceita]}>
+
+                <View style={financasEstilos.itemResumo}>
+                    <View style={financasEstilos.indicadorReceita} />
+                    <Text style={financasEstilos.labelResumo}>Receitas</Text>
+                    <Text style={[financasEstilos.valorResumo, financasEstilos.valorReceita]}>
                         {formatarMoeda(totalReceitas)}
                     </Text>
                 </View>
 
-                <View style={estilos.itemResumo}>
-                    <View style={estilos.indicadorDespesa} />
-                    <Text style={estilos.labelResumo}>Despesas</Text>
-                    <Text style={[estilos.valorResumo, estilos.valorDespesa]}>
+                <View style={financasEstilos.itemResumo}>
+                    <View style={financasEstilos.indicadorDespesa} />
+                    <Text style={financasEstilos.labelResumo}>Despesas</Text>
+                    <Text style={[financasEstilos.valorResumo, financasEstilos.valorDespesa]}>
                         {formatarMoeda(totalDespesas)}
                     </Text>
                 </View>
 
-                <View style={estilos.separadorResumo} />
+                <View style={financasEstilos.separadorResumo} />
 
-                <View style={estilos.itemResumo}>
+                <View style={financasEstilos.itemResumo}>
                     <View style={[
-                        estilos.indicadorSaldo, 
+                        financasEstilos.indicadorSaldo, 
                         { backgroundColor: saldo >= 0 ? cores.primaria : '#ff4444' }
                     ]} />
-                    <Text style={estilos.labelSaldo}>Saldo</Text>
+                    <Text style={financasEstilos.labelSaldo}>Saldo</Text>
                     <Text style={[
-                        estilos.valorSaldo,
+                        financasEstilos.valorSaldo,
                         { color: saldo >= 0 ? cores.primaria : '#ff4444' }
                     ]}>
                         {formatarMoeda(saldo)}
@@ -503,8 +535,8 @@ return (
                     <Text style={estilosGlobais.subtitulo}>Transações Recentes</Text>
                     
                     {transacoes.map((transacao) => (
-                        <View key={transacao.id} style={estilos.itemTransacao}>
-                            <View style={estilos.iconeTransacao}>
+                        <View key={transacao.id} style={financasEstilos.itemTransacao}>
+                            <View style={financasEstilos.iconeTransacao}>
                                 <Ionicons 
                                     name={obterIconeTransacao(transacao.tipo, transacao.categoria)} 
                                     size={20} 
@@ -512,25 +544,25 @@ return (
                                 />
                             </View>
                             
-                            <View style={estilos.infoTransacao}>
-                                <Text style={estilos.descricaoTransacao}>
+                            <View style={financasEstilos.infoTransacao}>
+                                <Text style={financasEstilos.descricaoTransacao}>
                                     {transacao.descricao}
                                 </Text>
-                                <Text style={estilos.categoriaTransacao}>
-                                    {transacao.categoria} • {formatarData(transacao.data)}
+                                <Text style={financasEstilos.categoriaTransacao}>
+                                    {transacao.categoria} • {formatarData(transacao.dataCriacao)}
                                 </Text>
                             </View>
 
-                            <View style={estilos.valorEAcoes}>
+                            <View style={financasEstilos.valorEAcoes}>
                                 <Text style={[
-                                    estilos.valorTransacao,
-                                    transacao.tipo === 'receita' ? estilos.valorPositivo : estilos.valorNegativo
+                                    financasEstilos.valorTransacao,
+                                    transacao.tipo === 'receita' ? financasEstilos.valorPositivo : financasEstilos.valorNegativo
                                 ]}>
                                     {transacao.tipo === 'receita' ? '+' : '-'} {formatarMoeda(transacao.valor)}
                                 </Text>
                                 
                                 <TouchableOpacity
-                                    style={estilos.botaoExcluir}
+                                    style={financasEstilos.botaoExcluir}
                                     onPress={() => excluirTransacao(transacao.id)}
                                 >
                                     <Ionicons name="trash-outline" size={16} color={cores.textoTerciario} />
@@ -540,10 +572,10 @@ return (
                     ))}
                 </View>
             ) : (
-                <View style={estilos.estadoVazio}>
+                <View style={financasEstilos.estadoVazio}>
                     <Ionicons name="wallet-outline" size={64} color={cores.textoTerciario} />
-                    <Text style={estilos.textoVazio}>Nenhuma transação registrada</Text>
-                    <Text style={estilos.dicaVazio}>
+                    <Text style={financasEstilos.textoVazio}>Nenhuma transação registrada</Text>
+                    <Text style={financasEstilos.dicaVazio}>
                         Comece adicionando suas receitas e despesas
                     </Text>
                 </View>
@@ -557,9 +589,9 @@ return (
             animationType="slide"
             onRequestClose={() => setModalVisivel(false)}
         >
-            <View style={estilos.modalContainer}>
-                <View style={estilos.modalConteudo}>
-                    <View style={estilos.cabecalhoModal}>
+            <View style={financasEstilos.modalContainer}>
+                <View style={financasEstilos.modalConteudo}>
+                    <View style={financasEstilos.cabecalhoModal}>
                         <Text style={estilosGlobais.subtitulo}>Nova Transação</Text>
                         <TouchableOpacity onPress={() => setModalVisivel(false)}>
                             <Ionicons name="close" size={24} color={cores.primaria} />
@@ -567,11 +599,11 @@ return (
                     </View>
 
                     {/* Seletor de Tipo */}
-                    <View style={estilos.seletorTipo}>
+                    <View style={financasEstilos.seletorTipo}>
                         <TouchableOpacity
                             style={[
-                                estilos.botaoTipo,
-                                tipo === 'receita' && estilos.botaoTipoAtivo
+                                financasEstilos.botaoTipo,
+                                tipo === 'receita' && financasEstilos.botaoTipoAtivo
                             ]}
                             onPress={() => {
                                 setTipo('receita');
@@ -584,8 +616,8 @@ return (
                                 color={tipo === 'receita' ? cores.fundo : cores.primaria} 
                             />
                             <Text style={[
-                                estilos.textoTipo,
-                                tipo === 'receita' && estilos.textoTipoAtivo
+                                financasEstilos.textoTipo,
+                                tipo === 'receita' && financasEstilos.textoTipoAtivo
                             ]}>
                                 Receita
                             </Text>
@@ -593,8 +625,8 @@ return (
 
                         <TouchableOpacity
                             style={[
-                                estilos.botaoTipo,
-                                tipo === 'despesa' && estilos.botaoTipoAtivo
+                                financasEstilos.botaoTipo,
+                                tipo === 'despesa' && financasEstilos.botaoTipoAtivo
                             ]}
                             onPress={() => {
                                 setTipo('despesa');
@@ -607,8 +639,8 @@ return (
                                 color={tipo === 'despesa' ? cores.fundo : cores.primaria} 
                             />
                             <Text style={[
-                                estilos.textoTipo,
-                                tipo === 'despesa' && estilos.textoTipoAtivo
+                                financasEstilos.textoTipo,
+                                tipo === 'despesa' && financasEstilos.textoTipoAtivo
                             ]}>
                                 Despesa
                             </Text>
@@ -635,24 +667,24 @@ return (
                     />
 
                     {/* Seletor de Categoria */}
-                    <Text style={estilos.labelCategoria}>Categoria:</Text>
+                    <Text style={financasEstilos.labelCategoria}>Categoria:</Text>
                     <ScrollView 
                         horizontal 
                         showsHorizontalScrollIndicator={false}
-                        style={estilos.categoriasContainer}
+                        style={financasEstilos.categoriasContainer}
                     >
                         {categorias[tipo].map((cat) => (
                             <TouchableOpacity
                                 key={cat}
                                 style={[
-                                    estilos.botaoCategoria,
-                                    categoria === cat && estilos.botaoCategoriaAtiva
+                                    financasEstilos.botaoCategoria,
+                                    categoria === cat && financasEstilos.botaoCategoriaAtiva
                                 ]}
                                 onPress={() => setCategoria(cat)}
                             >
                                 <Text style={[
-                                    estilos.textoCategoria,
-                                    categoria === cat && estilos.textoCategoriaAtiva
+                                    financasEstilos.textoCategoria,
+                                    categoria === cat && financasEstilos.textoCategoriaAtiva
                                 ]}>
                                     {cat}
                                 </Text>
@@ -661,7 +693,7 @@ return (
                         
                     </ScrollView>
 
-                    <View style={estilos.botoesModal}>
+                    <View style={financasEstilos.botoesModal}>
                         <TouchableOpacity
                             style={estilosGlobais.botaoSecundario}
                             onPress={() => setModalVisivel(false)}
@@ -670,11 +702,11 @@ return (
                         </TouchableOpacity>
 
                         <TouchableOpacity
-                            style={estilos.botaoLimpar}
+                            style={financasEstilos.botaoLimpar}
                             onPress={limparCampos}
                         >
                             <Ionicons name="refresh-outline" size={16} color={cores.textoTerciario} />
-                            <Text style={estilos.textoBotaoLimpar}>Limpar</Text>
+                            <Text style={financasEstilos.textoBotaoLimpar}>Limpar</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
@@ -695,32 +727,32 @@ return (
             animationType="slide"
             onRequestClose={() => setModalSeletorMesVisivel(false)}
         >
-            <View style={estilos.modalContainer}>
-                <View style={estilos.modalConteudo}>
-                    <View style={estilos.cabecalhoModal}>
+            <View style={financasEstilos.modalContainer}>
+                <View style={financasEstilos.modalConteudo}>
+                    <View style={financasEstilos.cabecalhoModal}>
                         <Text style={estilosGlobais.subtitulo}>Selecionar Mês/Ano</Text>
                         <TouchableOpacity onPress={() => setModalSeletorMesVisivel(false)}>
                             <Ionicons name="close" size={24} color={cores.primaria} />
                         </TouchableOpacity>
                     </View>
 
-                    <ScrollView style={estilos.containerSeletor}>
+                    <ScrollView style={financasEstilos.containerSeletor}>
                         {/* Seletor de Ano */}
-                        <Text style={estilos.labelSeletor}>Ano:</Text>
-                        <View style={estilos.linhaSeletor}>
+                        <Text style={financasEstilos.labelSeletor}>Ano:</Text>
+                        <View style={financasEstilos.linhaSeletor}>
                             <TouchableOpacity 
-                                style={estilos.botaoSeta}
+                                style={financasEstilos.botaoSeta}
                                 onPress={() => setAnoSelecionado(anoSelecionado - 1)}
                             >
                                 <Ionicons name="chevron-back" size={24} color={cores.primaria} />
                             </TouchableOpacity>
                             
-                            <View style={estilos.containerValor}>
-                                <Text style={estilos.valorSeletor}>{anoSelecionado}</Text>
+                            <View style={financasEstilos.containerValor}>
+                                <Text style={financasEstilos.valorSeletor}>{anoSelecionado}</Text>
                             </View>
                             
                             <TouchableOpacity 
-                                style={estilos.botaoSeta}
+                                style={financasEstilos.botaoSeta}
                                 onPress={() => setAnoSelecionado(anoSelecionado + 1)}
                             >
                                 <Ionicons name="chevron-forward" size={24} color={cores.primaria} />
@@ -728,20 +760,20 @@ return (
                         </View>
 
                         {/* Seletor de Mês */}
-                        <Text style={estilos.labelSeletor}>Mês:</Text>
-                        <View style={estilos.gridMeses}>
+                        <Text style={financasEstilos.labelSeletor}>Mês:</Text>
+                        <View style={financasEstilos.gridMeses}>
                             {nomesMeses.map((nomeMes, index) => (
                                 <TouchableOpacity
                                     key={index}
                                     style={[
-                                        estilos.botaoMes,
-                                        mesSelecionado === index + 1 && estilos.botaoMesAtivo
+                                        financasEstilos.botaoMes,
+                                        mesSelecionado === index + 1 && financasEstilos.botaoMesAtivo
                                     ]}
                                     onPress={() => setMesSelecionado(index + 1)}
                                 >
                                     <Text style={[
-                                        estilos.textoMes,
-                                        mesSelecionado === index + 1 && estilos.textoMesAtivo
+                                        financasEstilos.textoMes,
+                                        mesSelecionado === index + 1 && financasEstilos.textoMesAtivo
                                     ]}>
                                         {nomeMes.substring(0, 3)}
                                     </Text>
@@ -750,16 +782,16 @@ return (
                         </View>
                     </ScrollView>
 
-                    <View style={estilos.botoesModal}>
+                    <View style={financasEstilos.botoesModal}>
                         <TouchableOpacity
-                            style={estilos.botaoCancelar}
+                            style={financasEstilos.botaoCancelar}
                             onPress={() => setModalSeletorMesVisivel(false)}
                         >
-                            <Text style={estilos.textoCancelar}>Cancelar</Text>
+                            <Text style={financasEstilos.textoCancelar}>Cancelar</Text>
                         </TouchableOpacity>
                         
                         <TouchableOpacity
-                            style={estilos.botaoConfirmar}
+                            style={financasEstilos.botaoConfirmar}
                             onPress={() => {
                                 setModalSeletorMesVisivel(false);
                                 carregarDados();
@@ -779,14 +811,14 @@ return (
             animationType="slide"
             onRequestClose={() => setModalHistoricoVisivel(false)}
         >
-            <View style={estilos.modalContainer}>
-                <View style={estilos.modalConteudo}>
-                    <View style={estilos.cabecalhoModal}>
+            <View style={financasEstilos.modalContainer}>
+                <View style={financasEstilos.modalConteudo}>
+                    <View style={financasEstilos.cabecalhoModal}>
                         <Text style={estilosGlobais.subtitulo}>📊 Histórico Mensal</Text>
-                        <View style={estilos.botoesModalHistorico}>
+                        <View style={financasEstilos.botoesModalHistorico}>
                             {historicoMeses.length > 0 && (
                                 <TouchableOpacity 
-                                    style={estilos.botaoLimparHistorico}
+                                    style={financasEstilos.botaoLimparHistorico}
                                     onPress={limparTodoHistorico}
                                 >
                                     <Ionicons name="trash" size={18} color={'#ff4444'} />
@@ -798,21 +830,21 @@ return (
                         </View>
                     </View>
 
-                    <ScrollView style={estilos.historicoContainer}>
+                    <ScrollView style={financasEstilos.historicoContainer}>
                         {historicoMeses.length > 0 ? (
                             historicoMeses.map((mes, index) => (
-                                <View key={index} style={estilos.itemHistorico}>
-                                    <View style={estilos.cabecalhoHistorico}>
-                                        <Text style={estilos.mesHistorico}>{mes.mes}</Text>
-                                        <View style={estilos.acaoHistorico}>
+                                <View key={index} style={financasEstilos.itemHistorico}>
+                                    <View style={financasEstilos.cabecalhoHistorico}>
+                                        <Text style={financasEstilos.mesHistorico}>{mes.mes}</Text>
+                                        <View style={financasEstilos.acaoHistorico}>
                                             <Text style={[
-                                                estilos.saldoHistorico,
+                                                financasEstilos.saldoHistorico,
                                                 { color: mes.saldo >= 0 ? cores.primaria : '#ff4444' }
                                             ]}>
                                                 {formatarMoeda(mes.saldo)}
                                             </Text>
                                             <TouchableOpacity
-                                                style={estilos.botaoExcluirHistorico}
+                                                style={financasEstilos.botaoExcluirHistorico}
                                                 onPress={() => excluirRegistroHistorico(index)}
                                             >
                                                 <Ionicons name="trash-outline" size={16} color={'#ff4444'} />
@@ -820,24 +852,24 @@ return (
                                         </View>
                                     </View>
                                     
-                                    <View style={estilos.resumoHistorico}>
-                                        <View style={estilos.itemResumoHistorico}>
-                                            <Text style={estilos.labelHistorico}>💰 Receitas:</Text>
-                                            <Text style={estilos.valorHistoricoPositivo}>
+                                    <View style={financasEstilos.resumoHistorico}>
+                                        <View style={financasEstilos.itemResumoHistorico}>
+                                            <Text style={financasEstilos.labelHistorico}>💰 Receitas:</Text>
+                                            <Text style={financasEstilos.valorHistoricoPositivo}>
                                                 {formatarMoeda(mes.totalReceitas)}
                                             </Text>
                                         </View>
                                         
-                                        <View style={estilos.itemResumoHistorico}>
-                                            <Text style={estilos.labelHistorico}>💸 Despesas:</Text>
-                                            <Text style={estilos.valorHistoricoNegativo}>
+                                        <View style={financasEstilos.itemResumoHistorico}>
+                                            <Text style={financasEstilos.labelHistorico}>💸 Despesas:</Text>
+                                            <Text style={financasEstilos.valorHistoricoNegativo}>
                                                 {formatarMoeda(mes.totalDespesas)}
                                             </Text>
                                         </View>
                                         
-                                        <View style={estilos.itemResumoHistorico}>
-                                            <Text style={estilos.labelHistorico}>📈 Performance:</Text>
-                                            <Text style={estilos.valorHistorico}>
+                                        <View style={financasEstilos.itemResumoHistorico}>
+                                            <Text style={financasEstilos.labelHistorico}>📈 Performance:</Text>
+                                            <Text style={financasEstilos.valorHistorico}>
                                                 {mes.saldo >= 0 ? 'Positivo ✅' : 'Negativo ❌'}
                                             </Text>
                                         </View>
@@ -845,12 +877,12 @@ return (
                                 </View>
                             ))
                         ) : (
-                            <View style={estilos.historicoVazio}>
+                            <View style={financasEstilos.historicoVazio}>
                                 <Ionicons name="calendar-outline" size={64} color={cores.textoTerciario} />
-                                <Text style={estilos.textoHistoricoVazio}>
+                                <Text style={financasEstilos.textoHistoricoVazio}>
                                     Nenhum histórico mensal
                                 </Text>
-                                <Text style={estilos.dicaHistoricoVazio}>
+                                <Text style={financasEstilos.dicaHistoricoVazio}>
                                     Feche o mês atual para criar o primeiro registro
                                 </Text>
                             </View>
@@ -864,605 +896,6 @@ return (
 );
 };
 
-const estilos = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-  },
 
-  cabecalho: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingBottom: 12,
-  },
-
-  botoesAcoes: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-
-  botaoSecundario: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: cores.fundoSecundario,
-    borderWidth: 2,
-    borderColor: cores.primaria,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: cores.primaria,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-
-  botaoLimparTudo: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: cores.fundoSecundario,
-    borderWidth: 2,
-    borderColor: '#ff4444',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#ff4444',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-
-  botaoAdicionar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: cores.primaria,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: cores.primaria,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.5,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-
-  // Resumo
-  itemResumo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 8,
-  },
-
-  indicadorReceita: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: cores.primaria,
-    marginRight: 12,
-  },
-
-  indicadorDespesa: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#ff4444',
-    marginRight: 12,
-  },
-
-  indicadorSaldo: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: 12,
-  },
-
-  labelResumo: {
-    flex: 1,
-    fontSize: 14,
-    color: cores.textoSecundario,
-  },
-
-  labelSaldo: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: '600',
-    color: cores.texto,
-  },
-
-  valorResumo: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-
-  valorReceita: {
-    color: cores.primaria,
-  },
-
-  valorDespesa: {
-    color: '#ff4444',
-  },
-
-  valorSaldo: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-
-  separadorResumo: {
-    height: 1,
-    backgroundColor: cores.borda,
-    marginVertical: 12,
-  },
-
-  // Transações
-  itemTransacao: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: cores.borda,
-  },
-
-  iconeTransacao: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: cores.fundoTerciario,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-
-  infoTransacao: {
-    flex: 1,
-  },
-
-  descricaoTransacao: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: cores.texto,
-    marginBottom: 4,
-  },
-
-  categoriaTransacao: {
-    fontSize: 12,
-    color: cores.textoTerciario,
-  },
-
-  valorEAcoes: {
-    alignItems: 'flex-end',
-  },
-
-  valorTransacao: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 4,
-  },
-
-  valorPositivo: {
-    color: cores.primaria,
-  },
-
-  valorNegativo: {
-    color: '#ff4444',
-  },
-
-  botaoExcluir: {
-    padding: 4,
-  },
-
-  // Estado vazio
-  estadoVazio: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 40,
-    paddingVertical: 60,
-  },
-
-  textoVazio: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: cores.textoSecundario,
-    marginTop: 16,
-    textAlign: 'center',
-  },
-
-  dicaVazio: {
-    fontSize: 14,
-    color: cores.textoTerciario,
-    marginTop: 8,
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-
-  // Modal
-  modalContainer: {
-    flex: 1,
-    backgroundColor: cores.overlay,
-    justifyContent: 'center',
-    paddingHorizontal: 20,
-  },
-
-  modalConteudo: {
-    backgroundColor: cores.fundo,
-    borderRadius: 12,
-    padding: 20,
-    maxHeight: '90%',
-  },
-
-  cabecalhoModal: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-
-  botoesModalHistorico: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-
-  botaoLimparHistorico: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: cores.fundoSecundario,
-    borderWidth: 2,
-    borderColor: '#ff4444',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#ff4444',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-
-  // Seletor de tipo
-  seletorTipo: {
-    flexDirection: 'row',
-    marginBottom: 20,
-  },
-
-  botaoTipo: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    borderWidth: 1,
-    borderColor: cores.primaria,
-    borderRadius: 8,
-    marginHorizontal: 4,
-  },
-
-  botaoTipoAtivo: {
-    backgroundColor: cores.primaria,
-  },
-
-  textoTipo: {
-    marginLeft: 8,
-    fontSize: 14,
-    fontWeight: '600',
-    color: cores.primaria,
-  },
-
-  textoTipoAtivo: {
-    color: cores.fundo,
-  },
-
-  // Categorias
-  labelCategoria: {
-    fontSize: 14,
-    color: cores.textoSecundario,
-    marginBottom: 8,
-  },
-
-  categoriasContainer: {
-    marginBottom: 20,
-  },
-
-  botaoCategoria: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderWidth: 1,
-    borderColor: cores.borda,
-    borderRadius: 20,
-    marginRight: 8,
-  },
-
-  botaoCategoriaAtiva: {
-    backgroundColor: cores.primaria,
-    borderColor: cores.primaria,
-  },
-
-  textoCategoria: {
-    fontSize: 12,
-    color: cores.textoSecundario,
-  },
-
-  textoCategoriaAtiva: {
-    color: cores.fundo,
-  },
-
-  botoesModal: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 10,
-  },
-
-  botaoLimpar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderWidth: 1,
-    borderColor: cores.borda,
-    borderRadius: 8,
-    backgroundColor: cores.fundoSecundario,
-  },
-
-  textoBotaoLimpar: {
-    marginLeft: 6,
-    fontSize: 14,
-    fontWeight: '600',
-    color: cores.textoTerciario,
-  },
-
-  // Histórico Mensal
-  historicoContainer: {
-    maxHeight: 400,
-  },
-
-  itemHistorico: {
-    backgroundColor: cores.fundoSecundario,
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: cores.borda,
-  },
-
-  cabecalhoHistorico: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-
-  acaoHistorico: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-
-  botaoExcluirHistorico: {
-    padding: 6,
-    borderRadius: 12,
-    backgroundColor: cores.fundoTerciario,
-    borderWidth: 1,
-    borderColor: '#ff4444',
-  },
-
-  mesHistorico: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: cores.texto,
-    textTransform: 'capitalize',
-  },
-
-  saldoHistorico: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-
-  resumoHistorico: {
-    gap: 8,
-  },
-
-  itemResumoHistorico: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-
-  labelHistorico: {
-    fontSize: 14,
-    color: cores.textoSecundario,
-  },
-
-  valorHistorico: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: cores.textoSecundario,
-  },
-
-  valorHistoricoPositivo: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: cores.primaria,
-  },
-
-  valorHistoricoNegativo: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#ff4444',
-  },
-
-  historicoVazio: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 60,
-  },
-
-  textoHistoricoVazio: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: cores.textoSecundario,
-    marginTop: 16,
-    textAlign: 'center',
-  },
-
-  dicaHistoricoVazio: {
-    fontSize: 14,
-    color: cores.textoTerciario,
-    marginTop: 8,
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-
-  // Estilos do Seletor de Mês/Ano
-  seletorContainer: {
-    backgroundColor: cores.fundoSecundario,
-    marginHorizontal: 16,
-    marginBottom: 16,
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: cores.borda,
-  },
-
-  tituloSecao: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#ffffff',
-    marginBottom: 8,
-  },
-
-  botaoSeletor: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: cores.fundoTerciario,
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: cores.borda,
-  },
-
-  textoSeletor: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#ffffff',
-  },
-
-  containerSeletor: {
-    maxHeight: 400,
-  },
-
-  labelSeletor: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#ffffff',
-    marginBottom: 12,
-    marginTop: 16,
-  },
-
-  linhaSeletor: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-
-  botaoSeta: {
-    padding: 12,
-    backgroundColor: cores.fundoTerciario,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: cores.borda,
-  },
-
-  containerValor: {
-    flex: 1,
-    alignItems: 'center',
-    marginHorizontal: 20,
-  },
-
-  valorSeletor: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#ffffff',
-  },
-
-  gridMeses: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    justifyContent: 'space-between',
-  },
-
-  botaoMes: {
-    width: '22%',
-    aspectRatio: 1,
-    backgroundColor: cores.fundoTerciario,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: cores.borda,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-
-  botaoMesAtivo: {
-    backgroundColor: cores.primaria,
-    borderColor: cores.primaria,
-  },
-
-  textoMes: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: '#ffffff',
-  },
-
-  textoMesAtivo: {
-    color: cores.textoBotao,
-    fontWeight: '600',
-  },
-
-  botaoCancelar: {
-    flex: 1,
-    backgroundColor: cores.fundoSecundario,
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginRight: 8,
-    borderWidth: 1,
-    borderColor: cores.borda,
-  },
-
-  textoCancelar: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#ffffff',
-  },
-
-  botaoConfirmar: {
-    flex: 1,
-    backgroundColor: cores.primaria,
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginLeft: 8,
-  },
-});
 
 export default FinancasTela;

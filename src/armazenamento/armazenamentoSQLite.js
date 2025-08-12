@@ -1,12 +1,41 @@
 import { executarQuery, executarComando, iniciarTransacao } from './database';
 
+// ====================== FUNÇÕES AUXILIARES ======================
+
+// Função para obter data/hora local no formato ISO
+const obterDataHoraLocal = () => {
+  const agora = new Date();
+  // Criar string ISO com horário local real
+  const ano = agora.getFullYear();
+  const mes = String(agora.getMonth() + 1).padStart(2, '0');
+  const dia = String(agora.getDate()).padStart(2, '0');
+  const horas = String(agora.getHours()).padStart(2, '0');
+  const minutos = String(agora.getMinutes()).padStart(2, '0');
+  const segundos = String(agora.getSeconds()).padStart(2, '0');
+  const milissegundos = String(agora.getMilliseconds()).padStart(3, '0');
+  
+  // Retornar no formato ISO mas com horário local
+  const dataHoraLocal = `${ano}-${mes}-${dia}T${horas}:${minutos}:${segundos}.${milissegundos}`;
+  console.log(`🕒 Data/hora local gerada: ${dataHoraLocal} (Horas: ${horas}, Minutos: ${minutos})`);
+  return dataHoraLocal;
+};
+
+// Função para obter apenas a data local no formato YYYY-MM-DD
+const obterDataLocal = () => {
+  const agora = new Date();
+  const ano = agora.getFullYear();
+  const mes = String(agora.getMonth() + 1).padStart(2, '0');
+  const dia = String(agora.getDate()).padStart(2, '0');
+  return `${ano}-${mes}-${dia}`;
+};
+
 // ====================== FUNÇÕES DO DIÁRIO ======================
 
 export const salvarEntradaDiario = async (entrada) => {
   try {
     const resultado = await executarComando(
       'INSERT INTO diario (titulo, conteudo, data, dataCriacao) VALUES (?, ?, ?, ?)',
-      [entrada.titulo, entrada.conteudo, entrada.data || new Date().toISOString().split('T')[0], new Date().toISOString()]
+      [entrada.titulo, entrada.conteudo, entrada.data || obterDataLocal(), obterDataHoraLocal()]
     );
     return resultado.lastInsertRowId;
   } catch (error) {
