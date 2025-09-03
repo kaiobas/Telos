@@ -34,7 +34,6 @@ const FinancasTela = () => {
   const [modalVisivel, setModalVisivel] = useState(false);
   const [modalHistoricoVisivel, setModalHistoricoVisivel] = useState(false);
   const [modalSeletorMesVisivel, setModalSeletorMesVisivel] = useState(false);
-  const [modalCalculadoraVisivel, setModalCalculadoraVisivel] = useState(false);
   const [descricao, setDescricao] = useState('');
   const [valor, setValor] = useState('');
   const [tipo, setTipo] = useState('receita'); // 'receita' ou 'despesa'
@@ -42,12 +41,6 @@ const FinancasTela = () => {
   const [carregando, setCarregando] = useState(true);
   const [atualizando, setAtualizando] = useState(false);
   const [historicoMeses, setHistoricoMeses] = useState([]);
-  
-  // Estados da calculadora
-  const [displayCalculadora, setDisplayCalculadora] = useState('0');
-  const [valorAnterior, setValorAnterior] = useState(null);
-  const [operacao, setOperacao] = useState(null);
-  const [aguardandoOperando, setAguardandoOperando] = useState(false);
   
   // Controle do mês/ano selecionado para transações
   const [anoSelecionado, setAnoSelecionado] = useState(new Date().getFullYear());
@@ -432,90 +425,6 @@ const FinancasTela = () => {
     }
   };
 
-  // ====================== FUNÇÕES DA CALCULADORA ======================
-
-  const limparCalculadora = () => {
-    setDisplayCalculadora('0');
-    setValorAnterior(null);
-    setOperacao(null);
-    setAguardandoOperando(false);
-  };
-
-  const inserirNumero = (numero) => {
-    if (aguardandoOperando) {
-      setDisplayCalculadora(String(numero));
-      setAguardandoOperando(false);
-    } else {
-      setDisplayCalculadora(displayCalculadora === '0' ? String(numero) : displayCalculadora + numero);
-    }
-  };
-
-  const inserirDecimal = () => {
-    if (aguardandoOperando) {
-      setDisplayCalculadora('0,');
-      setAguardandoOperando(false);
-    } else if (displayCalculadora.indexOf(',') === -1) {
-      setDisplayCalculadora(displayCalculadora + ',');
-    }
-  };
-
-  const executarOperacao = (proximaOperacao) => {
-    const inputValue = parseFloat(displayCalculadora.replace(',', '.'));
-
-    if (valorAnterior === null) {
-      setValorAnterior(inputValue);
-    } else if (operacao) {
-      const valorAtual = valorAnterior || 0;
-      const novoValor = calcular(valorAtual, inputValue, operacao);
-
-      setDisplayCalculadora(String(novoValor).replace('.', ','));
-      setValorAnterior(novoValor);
-    }
-
-    setAguardandoOperando(true);
-    setOperacao(proximaOperacao);
-  };
-
-  const calcular = (primeiroOperando, segundoOperando, operacao) => {
-    switch (operacao) {
-      case '+':
-        return primeiroOperando + segundoOperando;
-      case '-':
-        return primeiroOperando - segundoOperando;
-      case '*':
-        return primeiroOperando * segundoOperando;
-      case '/':
-        return primeiroOperando / segundoOperando;
-      case '=':
-        return segundoOperando;
-      default:
-        return segundoOperando;
-    }
-  };
-
-  const calcularResultado = () => {
-    const inputValue = parseFloat(displayCalculadora.replace(',', '.'));
-
-    if (valorAnterior !== null && operacao) {
-      const novoValor = calcular(valorAnterior, inputValue, operacao);
-      setDisplayCalculadora(String(novoValor).replace('.', ','));
-      setValorAnterior(null);
-      setOperacao(null);
-      setAguardandoOperando(true);
-    }
-  };
-
-  const usarResultadoCalculadora = () => {
-    const resultado = parseFloat(displayCalculadora.replace(',', '.'));
-    if (!isNaN(resultado) && resultado > 0) {
-      setValor(resultado.toString().replace('.', ','));
-      setModalCalculadoraVisivel(false);
-      setModalVisivel(true);
-    } else {
-      Alert.alert('Erro', 'Por favor, calcule um valor válido primeiro.');
-    }
-  };
-
   const { totalReceitas, totalDespesas, saldo } = calcularResumo();
 
 return (
@@ -570,20 +479,6 @@ return (
               {nomesMeses[mesSelecionado - 1]} {anoSelecionado}
             </Text>
             <Ionicons name="chevron-down" size={20} color="#ffffff" />
-          </TouchableOpacity>
-        </View>
-
-        {/* Botão da Calculadora */}
-        <View style={financasEstilos.calculadoraContainer}>
-          <TouchableOpacity 
-            style={financasEstilos.botaoCalculadora}
-            onPress={() => {
-              limparCalculadora();
-              setModalCalculadoraVisivel(true);
-            }}
-          >
-            <Ionicons name="calculator-outline" size={24} color={cores.primaria} />
-            <Text style={financasEstilos.textoCalculadora}>Calculadora</Text>
           </TouchableOpacity>
         </View>
 
@@ -807,10 +702,11 @@ return (
                         </TouchableOpacity>
 
                         <TouchableOpacity
-                            style={financasEstilos.botao}
+                            style={financasEstilos.botaoLimpar}
                             onPress={limparCampos}
                         >
-                            <Ionicons name="refresh-outline" size={35} color={cores.textoTerciario} /> 
+                            <Ionicons name="refresh-outline" size={16} color={cores.textoTerciario} />
+                            <Text style={financasEstilos.textoBotaoLimpar}>Limpar</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
@@ -993,181 +889,6 @@ return (
                         )}
                         <View style={{ height: 32 }} />
                     </ScrollView>
-                </View>
-            </View>
-        </Modal>
-
-        {/* Modal da Calculadora */}
-        <Modal
-            visible={modalCalculadoraVisivel}
-            transparent={true}
-            animationType="slide"
-            onRequestClose={() => setModalCalculadoraVisivel(false)}
-        >
-            <View style={financasEstilos.modalContainer}>
-                <View style={financasEstilos.modalCalculadora}>
-                    <View style={financasEstilos.cabecalhoModal}>
-                        <Text style={estilosGlobais.subtitulo}>🧮 Calculadora</Text>
-                        <TouchableOpacity onPress={() => setModalCalculadoraVisivel(false)}>
-                            <Ionicons name="close" size={24} color={cores.primaria} />
-                        </TouchableOpacity>
-                    </View>
-
-                    {/* Display da Calculadora */}
-                    <View style={financasEstilos.displayCalculadora}>
-                        <Text style={financasEstilos.textoDisplay}>{displayCalculadora}</Text>
-                        <Text style={financasEstilos.valorFormatado}>
-                            {!isNaN(parseFloat(displayCalculadora.replace(',', '.'))) ? 
-                              formatarMoeda(parseFloat(displayCalculadora.replace(',', '.'))) : ''}
-                        </Text>
-                    </View>
-
-                    {/* Teclado da Calculadora */}
-                    <View style={financasEstilos.tecladoCalculadora}>
-                        {/* Primeira linha */}
-                        <View style={financasEstilos.linhaTeclado}>
-                            <TouchableOpacity 
-                                style={[financasEstilos.botaoTeclado, financasEstilos.botaoLimpar]}
-                                onPress={limparCalculadora}
-                            >
-                                <Text style={financasEstilos.textoOperacao}>C</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity 
-                                style={[financasEstilos.botaoTeclado, financasEstilos.botaoOperacao]}
-                                onPress={() => executarOperacao('/')}
-                            >
-                                <Text style={financasEstilos.textoOperacao}>÷</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity 
-                                style={[financasEstilos.botaoTeclado, financasEstilos.botaoOperacao]}
-                                onPress={() => executarOperacao('*')}
-                            >
-                                <Text style={financasEstilos.textoOperacao}>×</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity 
-                                style={[financasEstilos.botaoTeclado, financasEstilos.botaoOperacao]}
-                                onPress={() => executarOperacao('-')}
-                            >
-                                <Text style={financasEstilos.textoOperacao}>-</Text>
-                            </TouchableOpacity>
-                        </View>
-
-                        {/* Segunda linha */}
-                        <View style={financasEstilos.linhaTeclado}>
-                            <TouchableOpacity 
-                                style={financasEstilos.botaoTeclado}
-                                onPress={() => inserirNumero('7')}
-                            >
-                                <Text style={financasEstilos.textoNumero}>7</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity 
-                                style={financasEstilos.botaoTeclado}
-                                onPress={() => inserirNumero('8')}
-                            >
-                                <Text style={financasEstilos.textoNumero}>8</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity 
-                                style={financasEstilos.botaoTeclado}
-                                onPress={() => inserirNumero('9')}
-                            >
-                                <Text style={financasEstilos.textoNumero}>9</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity 
-                                style={[financasEstilos.botaoTeclado, financasEstilos.botaoOperacao]}
-                                onPress={() => executarOperacao('+')}
-                            >
-                                <Text style={financasEstilos.textoOperacao}>+</Text>
-                            </TouchableOpacity>
-                        </View>
-
-                        {/* Terceira linha */}
-                        <View style={financasEstilos.linhaTeclado}>
-                            <TouchableOpacity 
-                                style={financasEstilos.botaoTeclado}
-                                onPress={() => inserirNumero('4')}
-                            >
-                                <Text style={financasEstilos.textoNumero}>4</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity 
-                                style={financasEstilos.botaoTeclado}
-                                onPress={() => inserirNumero('5')}
-                            >
-                                <Text style={financasEstilos.textoNumero}>5</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity 
-                                style={financasEstilos.botaoTeclado}
-                                onPress={() => inserirNumero('6')}
-                            >
-                                <Text style={financasEstilos.textoNumero}>6</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity 
-                                style={[financasEstilos.botaoTeclado, financasEstilos.botaoIgual]}
-                                onPress={calcularResultado}
-                            >
-                                <Text style={financasEstilos.textoOperacao}>=</Text>
-                            </TouchableOpacity>
-                        </View>
-
-                        {/* Quarta linha */}
-                        <View style={financasEstilos.linhaTeclado}>
-                            <TouchableOpacity 
-                                style={financasEstilos.botaoTeclado}
-                                onPress={() => inserirNumero('1')}
-                            >
-                                <Text style={financasEstilos.textoNumero}>1</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity 
-                                style={financasEstilos.botaoTeclado}
-                                onPress={() => inserirNumero('2')}
-                            >
-                                <Text style={financasEstilos.textoNumero}>2</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity 
-                                style={financasEstilos.botaoTeclado}
-                                onPress={() => inserirNumero('3')}
-                            >
-                                <Text style={financasEstilos.textoNumero}>3</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity 
-                                style={[financasEstilos.botaoTeclado, financasEstilos.botaoUsar]}
-                                onPress={usarResultadoCalculadora}
-                            >
-                                <Ionicons name="checkmark" size={20} color="#ffffff" />
-                            </TouchableOpacity>
-                        </View>
-
-                        {/* Quinta linha */}
-                        <View style={financasEstilos.linhaTeclado}>
-                            <TouchableOpacity 
-                                style={[financasEstilos.botaoTeclado, financasEstilos.botaoZero]}
-                                onPress={() => inserirNumero('0')}
-                            >
-                                <Text style={financasEstilos.textoNumero}>0</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity 
-                                style={financasEstilos.botaoTeclado}
-                                onPress={inserirDecimal}
-                            >
-                                <Text style={financasEstilos.textoNumero}>,</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-
-                    <View style={financasEstilos.botoesCalculadora}>
-                        <TouchableOpacity
-                            style={estilosGlobais.botaoSecundario}
-                            onPress={() => setModalCalculadoraVisivel(false)}
-                        >
-                            <Text style={estilosGlobais.textoBotaoSecundario}>Fechar</Text>
-                        </TouchableOpacity>
-                        
-                        <TouchableOpacity
-                            style={estilosGlobais.botao}
-                            onPress={usarResultadoCalculadora}
-                        >
-                            <Text style={estilosGlobais.textoBotao}>Usar Valor</Text>
-                        </TouchableOpacity>
-                    </View>
                 </View>
             </View>
         </Modal>

@@ -389,5 +389,3 @@ const estilos = StyleSheet.create({
     backgroundColor: cores.fundo,
   },
 });
-
-export default estilos;

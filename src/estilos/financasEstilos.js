@@ -351,25 +351,17 @@ const financasEstilos = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 12,
     paddingHorizontal: 16,
-    borderWidth: 2,
-    borderColor: cores.primaria,
-    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: cores.borda,
+    borderRadius: 8,
     backgroundColor: cores.fundoSecundario,
-    shadowColor: cores.primaria,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 3,
   },
 
   textoBotaoLimpar: {
     marginLeft: 6,
     fontSize: 14,
     fontWeight: '600',
-    color: cores.textoSecundario,
+    color: cores.textoTerciario,
   },
 
   // Histórico Mensal
@@ -607,126 +599,6 @@ const financasEstilos = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     marginLeft: 8,
-  },
-
-  // ====================== ESTILOS DA CALCULADORA ======================
-
-  calculadoraContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 12,
-  },
-
-  botaoCalculadora: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: cores.fundoSecundario,
-    borderWidth: 2,
-    borderColor: cores.primaria,
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    gap: 8,
-  },
-
-  textoCalculadora: {
-    color: cores.texto,
-    fontSize: 16,
-    fontWeight: '600',
-  },
-
-  modalCalculadora: {
-    backgroundColor: cores.fundo,
-    borderRadius: 16,
-    padding: 20,
-    maxHeight: '100%',
-    width: '100%',
-    alignSelf: 'center',
-  },
-
-  displayCalculadora: {
-    backgroundColor: cores.fundoSecundario,
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 20,
-    alignItems: 'flex-end',
-    minHeight: 80,
-    justifyContent: 'center',
-  },
-
-  textoDisplay: {
-    color: cores.texto,
-    fontSize: 32,
-    fontWeight: 'bold',
-    textAlign: 'right',
-  },
-
-  valorFormatado: {
-    color: cores.textoSecundario,
-    fontSize: 14,
-    marginTop: 4,
-    textAlign: 'right',
-  },
-
-  tecladoCalculadora: {
-    gap: 12,
-  },
-
-  linhaTeclado: {
-    flexDirection: 'row',
-    gap: 12,
-    justifyContent: 'space-between',
-  },
-
-  botaoTeclado: {
-    flex: 1,
-    aspectRatio: 1,
-    backgroundColor: cores.fundoSecundario,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: cores.fundoTerciario,
-  },
-
-  botaoZero: {
-    flex: 2,
-    aspectRatio: 2,
-  },
-
-  botaoOperacao: {
-    backgroundColor: cores.primaria,
-  },
-
-  botaoLimpar: {
-    backgroundColor: '#ff4444',
-  },
-
-  botaoIgual: {
-    backgroundColor: cores.primaria,
-  },
-
-  botaoUsar: {
-    backgroundColor: '#22c55e',
-  },
-
-  textoNumero: {
-    color: cores.texto,
-    fontSize: 24,
-    fontWeight: '600',
-  },
-
-  textoOperacao: {
-    color: '#000000ff',
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-
-  botoesCalculadora: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 20,
-    gap: 12,
   },
 });
 

@@ -553,10 +553,123 @@ const ConfiguracoesTela = () => {
             )}
           </View>
         )}
+
+        {/* Seção de Interface */}
+        <View style={estilosGlobais.cartao}>
+          <Text style={estilosGlobais.subtitulo}>Interface</Text>
+          <View style={estilos.itemConfiguracao}>
+            <View style={estilos.infoItem}>
+              <Text style={estilos.tituloItem}>Animações</Text>
+              <Text style={estilos.descricaoItem}>
+                Ativar animações suaves na interface
+              </Text>
+            </View>
+            <Switch
+              value={configuracaoApp.animacoes}
+              onValueChange={() => alternarConfiguracaoApp('animacoes')}
+              trackColor={{ false: cores.textoTerciario, true: cores.primaria }}
+              thumbColor={cores.fundo}
+            />
+          </View>
+        </View>
+
+        {/* Seção de Som e Vibração */}
+        <View style={estilosGlobais.cartao}>
+          <Text style={estilosGlobais.subtitulo}>Som e Vibração</Text>
+          
+          <View style={estilos.itemConfiguracao}>
+            <View style={estilos.infoItem}>
+              <Text style={estilos.tituloItem}>Sons do Sistema</Text>
+              <Text style={estilos.descricaoItem}>
+                Reproduzir sons para ações e notificações
+              </Text>
+            </View>
+            <Switch
+              value={configuracaoApp.sons}
+              onValueChange={() => alternarConfiguracaoApp('sons')}
+              trackColor={{ false: cores.textoTerciario, true: cores.primaria }}
+              thumbColor={cores.fundo}
+            />
+          </View>
+
+          <View style={estilos.itemConfiguracao}>
+            <View style={estilos.infoItem}>
+              <Text style={estilos.tituloItem}>Vibrações</Text>
+              <Text style={estilos.descricaoItem}>
+                Feedback tátil para interações
+              </Text>
+            </View>
+            <Switch
+              value={configuracaoApp.vibracoes}
+              onValueChange={() => alternarConfiguracaoApp('vibracoes')}
+              trackColor={{ false: cores.textoTerciario, true: cores.primaria }}
+              thumbColor={cores.fundo}
+            />
+          </View>
+        </View>
+
+        {/* Seção de Dados e Backup */}
+        <View style={estilosGlobais.cartao}>
+          <Text style={estilosGlobais.subtitulo}>Dados e Backup</Text>
+          
+          <View style={estilos.itemConfiguracao}>
+            <View style={estilos.infoItem}>
+              <Text style={estilos.tituloItem}>Lembrete de Eventos</Text>
+              <Text style={estilos.descricaoItem}>
+                Notificar 1 hora antes dos eventos
+              </Text>
+            </View>
+            <Switch
+              value={configuracaoApp.lembreteEventos}
+              onValueChange={() => alternarConfiguracaoApp('lembreteEventos')}
+              trackColor={{ false: cores.textoTerciario, true: cores.primaria }}
+              thumbColor={cores.fundo}
+            />
+          </View>
+
+          <View style={estilos.itemConfiguracao}>
+            <View style={estilos.infoItem}>
+              <Text style={estilos.tituloItem}>Backup Automático</Text>
+              <Text style={estilos.descricaoItem}>
+                Criar backup semanal dos dados automaticamente
+              </Text>
+            </View>
+            <Switch
+              value={configuracaoApp.backupAutomatico}
+              onValueChange={() => alternarConfiguracaoApp('backupAutomatico')}
+              trackColor={{ false: cores.textoTerciario, true: cores.primaria }}
+              thumbColor={cores.fundo}
+            />
+          </View>
+
+          <View style={estilos.itemConfiguracao}>
+            <View style={estilos.infoItem}>
+              <Text style={estilos.tituloItem}>Compactar Dados</Text>
+              <Text style={estilos.descricaoItem}>
+                Otimizar armazenamento dos dados
+              </Text>
+            </View>
+            <Switch
+              value={configuracaoApp.compactarDados}
+              onValueChange={() => alternarConfiguracaoApp('compactarDados')}
+              trackColor={{ false: cores.textoTerciario, true: cores.primaria }}
+              thumbColor={cores.fundo}
+            />
+          </View>
+        </View>
+
         {/* Ações Rápidas */}
         <View style={estilosGlobais.cartao}>
           <Text style={estilosGlobais.subtitulo}>Ações</Text>
           
+          <TouchableOpacity
+            style={estilos.botaoAcao}
+            onPress={testarNotificacao}
+          >
+            <Ionicons name="notifications-outline" size={20} color={cores.primaria} />
+            <Text style={estilos.textoBotaoAcao}>Testar Notificação</Text>
+          </TouchableOpacity>
+
           <TouchableOpacity
             style={estilos.botaoAcao}
             onPress={exportarDadosConfirmacao}
