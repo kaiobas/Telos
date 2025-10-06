@@ -96,9 +96,9 @@ const CalendarioTela = () => {
       const sucesso = await salvarEventoCalendario(novoEvento);
       
       if (sucesso) {
-        // Agendar notificação para o evento (1 hora antes)
+        // Agendar notificação para o evento (1 dia antes)
         try {
-          await agendarNotificacaoEvento(novoEvento, 60);
+          await agendarNotificacaoEvento(novoEvento, 1440);
         } catch (notifError) {
           console.log('Notificação do evento não foi agendada:', notifError.message);
         }
@@ -311,7 +311,7 @@ return (
                               <Text style={estilos.descricaoEventoGeral}>{evento.descricao}</Text>
                             )}
                             <Text style={estilos.dataEventoGeral}>
-                              📅 {formatarData(evento.data)}
+                               {formatarData(evento.data)}
                             </Text>
                           </View>
                           <TouchableOpacity
