@@ -728,6 +728,794 @@ const financasEstilos = StyleSheet.create({
     marginTop: 20,
     gap: 12,
   },
+
+  // ====================== ESTILOS DO COFRE ======================
+
+  cofreContainer: {
+    backgroundColor: cores.fundoSecundario,
+    borderRadius: 12,
+    padding: 16,
+    marginHorizontal: 20,
+    marginBottom: 16,
+    borderWidth: 2,
+    borderColor: '#ffd700',
+    shadowColor: '#ffd700',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+
+  cofreCabecalho: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+
+  cofreTitulo: {
+    color: '#ffd700',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+
+  cofreSaldo: {
+    color: '#ffd700',
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+
+  cofreBotoes: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    gap: 12,
+  },
+
+  botaoCofre: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    gap: 8,
+  },
+
+  botaoDeposito: {
+    backgroundColor: '#22c55e',
+  },
+
+  botaoRetirada: {
+    backgroundColor: '#ef4444',
+  },
+
+  textoBotaoCofre: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+
+  // Modal do Cofre
+  modalCofre: {
+    backgroundColor: cores.fundoSecundario,
+    borderRadius: 16,
+    margin: 10,
+    padding: 20,
+    maxHeight: '85%',
+    width: '95%',
+    alignSelf: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+
+  cofreHistoricoContainer: {
+    maxHeight: 300,
+  },
+
+  itemHistoricoCofre: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginBottom: 8,
+    backgroundColor: cores.fundo,
+    borderRadius: 8,
+    borderLeftWidth: 4,
+  },
+
+  historicoDeposito: {
+    borderLeftColor: '#22c55e',
+  },
+
+  historicoRetirada: {
+    borderLeftColor: '#ef4444',
+  },
+
+  infoHistoricoCofre: {
+    flex: 1,
+  },
+
+  tipoHistoricoCofre: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: cores.texto,
+    marginBottom: 2,
+  },
+
+  descricaoHistoricoCofre: {
+    fontSize: 12,
+    color: cores.textoSecundario,
+    marginBottom: 2,
+  },
+
+  dataHistoricoCofre: {
+    fontSize: 11,
+    color: cores.textoTerciario,
+  },
+
+  valorHistoricoCofre: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'right',
+  },
+
+  valorHistoricoPositivo: {
+    color: '#22c55e',
+  },
+
+  valorHistoricoNegativo: {
+    color: '#ef4444',
+  },
+
+  saldoHistoricoCofre: {
+    fontSize: 12,
+    color: cores.textoTerciario,
+    textAlign: 'right',
+    marginTop: 2,
+  },
+
+  cofreVazio: {
+    alignItems: 'center',
+    padding: 40,
+  },
+
+  textoCofreVazio: {
+    color: cores.textoSecundario,
+    fontSize: 16,
+    marginTop: 16,
+    textAlign: 'center',
+  },
+
+  dicaCofreVazio: {
+    color: cores.textoTerciario,
+    fontSize: 14,
+    marginTop: 8,
+    textAlign: 'center',
+  },
+
+  // ====================== ESTILOS DO OBJETIVO ======================
+
+  objetivoContainer: {
+    backgroundColor: cores.fundo,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: cores.primaria,
+  },
+
+  objetivoHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+
+  objetivoTitulo: {
+    color: cores.primaria,
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+
+  botaoObjetivo: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: cores.primaria,
+    borderRadius: 6,
+  },
+
+  textoBotaoObjetivo: {
+    color: cores.fundo,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+
+  objetivoInfo: {
+    marginBottom: 12,
+  },
+
+  objetivoValor: {
+    color: cores.primaria,
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+
+  objetivoDescricao: {
+    color: cores.textoSecundario,
+    fontSize: 14,
+    marginBottom: 8,
+  },
+
+  objetivoProgresso: {
+    marginBottom: 8,
+  },
+
+  progressoTexto: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+
+  progressoLabel: {
+    color: cores.texto,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+
+  progressoPorcentagem: {
+    color: cores.primaria,
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+
+  barraProgressoContainer: {
+    height: 8,
+    backgroundColor: cores.fundoSecundario,
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+
+  barraProgresso: {
+    height: '100%',
+    backgroundColor: cores.primaria,
+    borderRadius: 4,
+  },
+
+  objetivoCompleto: {
+    backgroundColor: cores.primaria,
+  },
+
+  valorRestante: {
+    color: cores.textoTerciario,
+    fontSize: 12,
+    marginTop: 4,
+    textAlign: 'center',
+  },
+
+  objetivoAlcancado: {
+    color: cores.primaria,
+    fontSize: 14,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginTop: 4,
+  },
+
+  // Modal do Objetivo
+  modalObjetivo: {
+    backgroundColor: cores.fundoSecundario,
+    borderRadius: 16,
+    margin: 20,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+
+  objetivoAtualContainer: {
+    backgroundColor: cores.fundo,
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: cores.primaria,
+  },
+
+  objetivoAtualLabel: {
+    color: cores.textoSecundario,
+    fontSize: 12,
+    marginBottom: 4,
+  },
+
+  objetivoAtualValor: {
+    color: cores.primaria,
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+
+  botoesObjetivo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+
+  botaoExcluirObjetivo: {
+    backgroundColor: cores.textoTerciario,
+    flex: 1,
+  },
+
+  // ====================== ESTILOS DO MODAL DE SENHA ======================
+
+  modalSenhaContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  modalSenhaConteudo: {
+    backgroundColor: cores.fundoSecundario,
+    borderRadius: 20,
+    padding: 30,
+    width: '90%',
+    maxWidth: 400,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+
+  cabecalhoModalSenha: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 30,
+  },
+
+  tituloModalSenha: {
+    color: cores.texto,
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+
+  indicadoresSenha: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 30,
+    gap: 20,
+  },
+
+  indicadorDigito: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: cores.textoTerciario,
+    backgroundColor: 'transparent',
+  },
+
+  indicadorDigitoPreenchido: {
+    backgroundColor: '#ffd700',
+    borderColor: '#ffd700',
+  },
+
+  botaoVoltarEtapa: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    backgroundColor: cores.fundo,
+  },
+
+  textoBotaoVoltarEtapa: {
+    color: cores.primaria,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+
+  tecladoSenha: {
+    alignItems: 'center',
+    marginBottom: 30,
+  },
+
+  linhaTecladoSenha: {
+    flexDirection: 'row',
+    marginBottom: 15,
+    gap: 20,
+  },
+
+  botaoTecladoSenha: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: cores.fundo,
+    borderWidth: 1,
+    borderColor: cores.primaria,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: cores.primaria,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+
+  textoTecladoSenha: {
+    color: cores.primaria,
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+
+  botaoConfirmarSenha: {
+    width: '100%',
+    paddingVertical: 16,
+    borderRadius: 12,
+    backgroundColor: cores.textoTerciario,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  botaoConfirmarSenhaAtivo: {
+    backgroundColor: '#ffd700',
+  },
+
+  textoBotaoConfirmarSenha: {
+    color: cores.texto,
+    fontSize: 16,
+    fontWeight: 'bold',
+    opacity: 0.5,
+  },
+
+  textoBotaoConfirmarSenhaAtivo: {
+    color: cores.fundo,
+    opacity: 1,
+  },
+
+  // ====================== ESTILOS ESPECÍFICOS DA TELA DO COFRE ======================
+
+  cofreTelaContainer: {
+    flex: 1,
+    backgroundColor: cores.fundo,
+  },
+
+  cofreConteudoPrincipal: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
+
+  cofreSaldoCard: {
+    backgroundColor: cores.fundoSecundario,
+    borderRadius: 16,
+    padding: 24,
+    marginBottom: 20,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#ffd700',
+    shadowColor: '#ffd700',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+
+  cofreSaldoLabel: {
+    color: cores.textoSecundario,
+    fontSize: 16,
+    marginBottom: 8,
+    fontWeight: '500',
+  },
+
+  cofreSaldoValor: {
+    color: '#ffd700',
+    fontSize: 36,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+
+  cofreAcoesContainer: {
+    flexDirection: 'row',
+    marginBottom: 24,
+    gap: 16,
+  },
+
+  cofreAcaoBotao: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    gap: 10,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+
+  cofreAcaoTexto: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+
+  cofreObjetivoSection: {
+    backgroundColor: cores.fundoSecundario,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: cores.primaria,
+  },
+
+  cofreObjetivoHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+
+  cofreObjetivoTitulo: {
+    color: cores.primaria,
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+
+  cofreObjetivoBotao: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: cores.primaria,
+    borderRadius: 8,
+  },
+
+  cofreObjetivoBotaoTexto: {
+    color: cores.fundo,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+
+  cofreObjetivoContent: {
+    marginBottom: 12,
+  },
+
+  cofreObjetivoValor: {
+    color: cores.primaria,
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+
+  cofreObjetivoDescricao: {
+    color: cores.textoSecundario,
+    fontSize: 14,
+    marginBottom: 12,
+    lineHeight: 20,
+  },
+
+  cofreProgressoContainer: {
+    marginBottom: 8,
+  },
+
+  cofreProgressoInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+
+  cofreProgressoLabel: {
+    color: cores.texto,
+    fontSize: 14,
+    fontWeight: '500',
+  },
+
+  cofreProgressoPorcentagem: {
+    color: cores.primaria,
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+
+  cofreProgressoBarra: {
+    height: 10,
+    backgroundColor: cores.fundo,
+    borderRadius: 5,
+    overflow: 'hidden',
+    marginBottom: 8,
+  },
+
+  cofreProgressoPreenchimento: {
+    height: '100%',
+    backgroundColor: cores.primaria,
+    borderRadius: 5,
+  },
+
+  cofreProgressoCompleto: {
+    backgroundColor: '#22c55e',
+  },
+
+  cofreObjetivoStatus: {
+    textAlign: 'center',
+    fontSize: 14,
+    fontWeight: '600',
+    marginTop: 4,
+  },
+
+  cofreObjetivoAlcancado: {
+    color: '#22c55e',
+  },
+
+  cofreObjetivoRestante: {
+    color: cores.textoTerciario,
+  },
+
+  cofreObjetivoPlaceholder: {
+    color: cores.textoTerciario,
+    fontSize: 14,
+    textAlign: 'center',
+    fontStyle: 'italic',
+  },
+
+  cofreHistoricoSection: {
+    flex: 1,
+    backgroundColor: cores.fundoSecundario,
+    borderRadius: 16,
+    padding: 20,
+  },
+
+  cofreHistoricoHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+
+  cofreHistoricoTitulo: {
+    color: cores.texto,
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+
+  cofreHistoricoLimpar: {
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: cores.fundo,
+  },
+
+  cofreHistoricoLista: {
+    flex: 1,
+  },
+
+  cofreHistoricoItem: {
+    flexDirection: 'row',
+    backgroundColor: cores.fundo,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderLeftWidth: 4,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+
+  cofreHistoricoItemDeposito: {
+    borderLeftColor: '#22c55e',
+  },
+
+  cofreHistoricoItemRetirada: {
+    borderLeftColor: '#ef4444',
+  },
+
+  cofreHistoricoItemInfo: {
+    flex: 1,
+    marginRight: 16,
+  },
+
+  cofreHistoricoItemTipo: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: cores.texto,
+    marginBottom: 4,
+  },
+
+  cofreHistoricoItemDescricao: {
+    fontSize: 14,
+    color: cores.textoSecundario,
+    marginBottom: 4,
+    lineHeight: 18,
+  },
+
+  cofreHistoricoItemData: {
+    fontSize: 12,
+    color: cores.textoTerciario,
+  },
+
+  cofreHistoricoItemValores: {
+    alignItems: 'flex-end',
+  },
+
+  cofreHistoricoItemValor: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+
+  cofreHistoricoItemValorDeposito: {
+    color: '#22c55e',
+  },
+
+  cofreHistoricoItemValorRetirada: {
+    color: '#ef4444',
+  },
+
+  cofreHistoricoItemSaldo: {
+    fontSize: 12,
+    color: cores.textoTerciario,
+  },
+
+  cofreHistoricoVazio: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+
+  cofreHistoricoVazioTexto: {
+    color: cores.textoSecundario,
+    fontSize: 16,
+    marginTop: 16,
+    textAlign: 'center',
+  },
+
+  cofreHistoricoVazioDica: {
+    color: cores.textoTerciario,
+    fontSize: 14,
+    marginTop: 8,
+    textAlign: 'center',
+  },
 });
 
 export default financasEstilos;

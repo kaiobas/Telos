@@ -24,11 +24,15 @@ import {
   carregarHistoricoFinanceiro,
   preservarHistoricoMensal,
   excluirRegistroHistorico as excluirRegistroHistoricoSQLite,
-  limparTodoHistoricoFinanceiro
+  limparTodoHistoricoFinanceiro,
+  verificarSenhaCofre,
+  salvarSenhaCofre,
+  validarSenhaCofre
 } from '../armazenamento/armazenamentoSQLite';
+import SenhaModal from '../componentes/SenhaModal';
 import { useDatabaseContext } from '../contextos/DatabaseContext';
 
-const FinancasTela = () => {
+const FinancasTela = ({ navigation }) => {
   const { bancoInicializado } = useDatabaseContext();
   const [transacoes, setTransacoes] = useState([]);
   const [modalVisivel, setModalVisivel] = useState(false);
@@ -42,6 +46,10 @@ const FinancasTela = () => {
   const [carregando, setCarregando] = useState(true);
   const [atualizando, setAtualizando] = useState(false);
   const [historicoMeses, setHistoricoMeses] = useState([]);
+  
+  // Estados do modal de senha
+  const [modalSenhaVisivel, setModalSenhaVisivel] = useState(false);
+  const [isFirstTimePassword, setIsFirstTimePassword] = useState(false);
   
   // Estados da calculadora
   const [displayCalculadora, setDisplayCalculadora] = useState('0');
@@ -516,6 +524,67 @@ const FinancasTela = () => {
     }
   };
 
+  // ====================== FUNÇÕES DO COFRE ======================
+
+  const acessarCofre = async () => {
+    try {
+      const temSenha = await verificarSenhaCofre();
+      
+      if (temSenha) {
+        // Já tem senha cadastrada, pedir para digitar
+        setIsFirstTimePassword(false);
+        setModalSenhaVisivel(true);
+      } else {
+        // Primeira vez, pedir para criar senha
+        setIsFirstTimePassword(true);
+        setModalSenhaVisivel(true);
+      }
+    } catch (error) {
+      console.error('Erro ao verificar senha do cofre:', error);
+      Alert.alert('Erro', 'Não foi possível acessar o cofre.');
+    }
+  };
+
+  const handleSenhaSuccess = async (senha) => {
+    try {
+      if (isFirstTimePassword) {
+        // Primeira vez - salvar a nova senha
+        const sucesso = await salvarSenhaCofre(senha);
+        if (sucesso) {
+          setModalSenhaVisivel(false);
+          Alert.alert('Sucesso', 'Senha do cofre criada com sucesso!', [
+            {
+              text: 'OK',
+              onPress: () => navigation.navigate('Cofre')
+            }
+          ]);
+        } else {
+          Alert.alert('Erro', 'Não foi possível criar a senha.');
+        }
+      } else {
+        // Validar senha existente
+        const senhaValida = await validarSenhaCofre(senha);
+        if (senhaValida) {
+          setModalSenhaVisivel(false);
+          navigation.navigate('Cofre');
+        } else {
+          Alert.alert('Erro', 'Senha incorreta. Tente novamente.');
+          // Não fechar o modal, deixar tentar novamente
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao processar senha:', error);
+      Alert.alert('Erro', 'Ocorreu um erro ao processar a senha.');
+    }
+  };
+
+  const fecharModalSenha = () => {
+    if (!isFirstTimePassword) {
+      // Só permite fechar se não for primeira vez
+      setModalSenhaVisivel(false);
+    }
+  };
+
   const { totalReceitas, totalDespesas, saldo } = calcularResumo();
 
 return (
@@ -533,6 +602,13 @@ return (
                     onPress={() => setModalHistoricoVisivel(true)}
                 >
                     <Ionicons name="calendar-outline" size={20} color={cores.primaria} />
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                    style={financasEstilos.botaoSecundario}
+                    onPress={acessarCofre}
+                >
+                    <Ionicons name="lock-closed" size={20} color={'#ffd700'} />
                 </TouchableOpacity>
                 
                 <TouchableOpacity
@@ -1007,7 +1083,7 @@ return (
             <View style={financasEstilos.modalContainer}>
                 <View style={financasEstilos.modalCalculadora}>
                     <View style={financasEstilos.cabecalhoModal}>
-                        <Text style={estilosGlobais.subtitulo}>🧮 Calculadora</Text>
+                        <Text style={estilosGlobais.subtitulo}> Calculadora</Text>
                         <TouchableOpacity onPress={() => setModalCalculadoraVisivel(false)}>
                             <Ionicons name="close" size={24} color={cores.primaria} />
                         </TouchableOpacity>
@@ -1171,6 +1247,15 @@ return (
                 </View>
             </View>
         </Modal>
+
+        {/* Modal de Senha do Cofre */}
+        <SenhaModal
+            visible={modalSenhaVisivel}
+            onClose={fecharModalSenha}
+            onSuccess={handleSenhaSuccess}
+            isFirstTime={isFirstTimePassword}
+            title={isFirstTimePassword ? "Crie uma senha de 4 dígitos" : "Digite a senha do cofre"}
+        />
     </View>
 );
 };

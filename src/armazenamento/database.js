@@ -168,6 +168,50 @@ const criarTabelas = async () => {
       );
     `);
 
+    // Tabela para o cofre (reserva financeira)
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS cofre (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        saldoTotal REAL NOT NULL DEFAULT 0,
+        dataCriacao TEXT NOT NULL,
+        dataModificacao TEXT DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // Tabela para histórico de movimentações do cofre
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS cofre_historico (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        tipo TEXT NOT NULL CHECK (tipo IN ('deposito', 'retirada')),
+        valor REAL NOT NULL,
+        descricao TEXT,
+        saldoAnterior REAL NOT NULL,
+        saldoNovo REAL NOT NULL,
+        dataCriacao TEXT NOT NULL
+      );
+    `);
+
+    // Tabela para objetivos financeiros do cofre
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS cofre_objetivo (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        valorObjetivo REAL NOT NULL,
+        descricao TEXT,
+        dataCriacao TEXT NOT NULL,
+        dataModificacao TEXT DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // Tabela para senha do cofre
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS cofre_senha (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        senha TEXT NOT NULL,
+        dataCriacao TEXT NOT NULL,
+        dataModificacao TEXT DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
     // Criar índices para melhor performance
     await db.execAsync(`
       CREATE INDEX IF NOT EXISTS idx_diario_data ON diario(data);

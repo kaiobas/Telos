@@ -621,6 +621,334 @@ export const obterEventosPorData = async (data) => {
   }
 };
 
+// ====================== FUNÇÕES DO COFRE ======================
+
+// Inicializar cofre se não existir
+export const inicializarCofre = async () => {
+  try {
+    const cofres = await executarQuery('SELECT * FROM cofre LIMIT 1');
+    
+    if (cofres.length === 0) {
+      await executarComando(
+        'INSERT INTO cofre (saldoTotal, dataCriacao) VALUES (?, ?)',
+        [0, obterDataHoraLocal()]
+      );
+      console.log('Cofre inicializado com saldo zero');
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Erro ao inicializar cofre:', error);
+    return false;
+  }
+};
+
+// Obter saldo atual do cofre
+export const obterSaldoCofre = async () => {
+  try {
+    await inicializarCofre(); // Garantir que o cofre existe
+    
+    const resultado = await executarQuery('SELECT saldoTotal FROM cofre LIMIT 1');
+    
+    if (resultado.length > 0) {
+      return parseFloat(resultado[0].saldoTotal);
+    }
+    
+    return 0;
+  } catch (error) {
+    console.error('Erro ao obter saldo do cofre:', error);
+    return 0;
+  }
+};
+
+// Adicionar valor ao cofre (depósito)
+export const depositarNoCofre = async (valor, descricao = '') => {
+  try {
+    if (valor <= 0) {
+      console.error('Valor deve ser positivo para depósito');
+      return false;
+    }
+
+    const saldoAtual = await obterSaldoCofre();
+    const novoSaldo = saldoAtual + valor;
+    
+    await iniciarTransacao(async () => {
+      // Atualizar saldo do cofre
+      await executarComando(
+        'UPDATE cofre SET saldoTotal = ?, dataModificacao = ? WHERE id = (SELECT id FROM cofre LIMIT 1)',
+        [novoSaldo, obterDataHoraLocal()]
+      );
+      
+      // Registrar no histórico
+      await executarComando(
+        'INSERT INTO cofre_historico (tipo, valor, descricao, saldoAnterior, saldoNovo, dataCriacao) VALUES (?, ?, ?, ?, ?, ?)',
+        ['deposito', valor, descricao, saldoAtual, novoSaldo, obterDataHoraLocal()]
+      );
+    });
+    
+    console.log(`Depósito realizado: +${valor}. Saldo: ${saldoAtual} → ${novoSaldo}`);
+    return true;
+  } catch (error) {
+    console.error('Erro ao depositar no cofre:', error);
+    return false;
+  }
+};
+
+// Retirar valor do cofre
+export const retirarDoCofre = async (valor, descricao = '') => {
+  try {
+    if (valor <= 0) {
+      console.error('Valor deve ser positivo para retirada');
+      return false;
+    }
+
+    const saldoAtual = await obterSaldoCofre();
+    
+    if (saldoAtual < valor) {
+      console.error('Saldo insuficiente no cofre');
+      return false;
+    }
+    
+    const novoSaldo = saldoAtual - valor;
+    
+    await iniciarTransacao(async () => {
+      // Atualizar saldo do cofre
+      await executarComando(
+        'UPDATE cofre SET saldoTotal = ?, dataModificacao = ? WHERE id = (SELECT id FROM cofre LIMIT 1)',
+        [novoSaldo, obterDataHoraLocal()]
+      );
+      
+      // Registrar no histórico
+      await executarComando(
+        'INSERT INTO cofre_historico (tipo, valor, descricao, saldoAnterior, saldoNovo, dataCriacao) VALUES (?, ?, ?, ?, ?, ?)',
+        ['retirada', valor, descricao, saldoAtual, novoSaldo, obterDataHoraLocal()]
+      );
+    });
+    
+    console.log(`Retirada realizada: -${valor}. Saldo: ${saldoAtual} → ${novoSaldo}`);
+    return true;
+  } catch (error) {
+    console.error('Erro ao retirar do cofre:', error);
+    return false;
+  }
+};
+
+// Carregar histórico de movimentações do cofre
+export const carregarHistoricoCofre = async (limite = 50) => {
+  try {
+    const historico = await executarQuery(
+      'SELECT * FROM cofre_historico ORDER BY dataCriacao DESC LIMIT ?',
+      [limite]
+    );
+    
+    return historico.map(item => ({
+      ...item,
+      id: item.id.toString(),
+      valor: parseFloat(item.valor),
+      saldoAnterior: parseFloat(item.saldoAnterior),
+      saldoNovo: parseFloat(item.saldoNovo)
+    }));
+  } catch (error) {
+    console.error('Erro ao carregar histórico do cofre:', error);
+    return [];
+  }
+};
+
+// Limpar histórico do cofre (manter apenas saldo atual)
+export const limparHistoricoCofre = async () => {
+  try {
+    const resultado = await executarComando('DELETE FROM cofre_historico');
+    console.log(`${resultado.changes} registros de histórico do cofre foram excluídos`);
+    return resultado.changes > 0;
+  } catch (error) {
+    console.error('Erro ao limpar histórico do cofre:', error);
+    return false;
+  }
+};
+
+// ====================== FUNÇÕES DE OBJETIVOS FINANCEIROS ======================
+
+// Salvar ou atualizar objetivo financeiro
+export const salvarObjetivoFinanceiro = async (valorObjetivo, descricao = '') => {
+  try {
+    if (valorObjetivo <= 0) {
+      console.error('Valor do objetivo deve ser positivo');
+      return false;
+    }
+
+    await iniciarTransacao(async () => {
+      // Verificar se já existe um objetivo
+      const objetivos = await executarQuery('SELECT * FROM cofre_objetivo LIMIT 1');
+      
+      if (objetivos.length > 0) {
+        // Atualizar objetivo existente
+        await executarComando(
+          'UPDATE cofre_objetivo SET valorObjetivo = ?, descricao = ?, dataModificacao = ? WHERE id = ?',
+          [valorObjetivo, descricao, obterDataHoraLocal(), objetivos[0].id]
+        );
+      } else {
+        // Criar novo objetivo
+        await executarComando(
+          'INSERT INTO cofre_objetivo (valorObjetivo, descricao, dataCriacao) VALUES (?, ?, ?)',
+          [valorObjetivo, descricao, obterDataHoraLocal()]
+        );
+      }
+    });
+    
+    console.log(`Objetivo financeiro salvo: ${valorObjetivo}`);
+    return true;
+  } catch (error) {
+    console.error('Erro ao salvar objetivo financeiro:', error);
+    return false;
+  }
+};
+
+// Obter objetivo financeiro atual
+export const obterObjetivoFinanceiro = async () => {
+  try {
+    const resultado = await executarQuery('SELECT * FROM cofre_objetivo LIMIT 1');
+    
+    if (resultado.length > 0) {
+      return {
+        ...resultado[0],
+        id: resultado[0].id.toString(),
+        valorObjetivo: parseFloat(resultado[0].valorObjetivo)
+      };
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Erro ao obter objetivo financeiro:', error);
+    return null;
+  }
+};
+
+// Excluir objetivo financeiro
+export const excluirObjetivoFinanceiro = async () => {
+  try {
+    const resultado = await executarComando('DELETE FROM cofre_objetivo');
+    console.log('Objetivo financeiro excluído');
+    return resultado.changes > 0;
+  } catch (error) {
+    console.error('Erro ao excluir objetivo financeiro:', error);
+    return false;
+  }
+};
+
+// Calcular progresso do objetivo
+export const calcularProgressoObjetivo = async () => {
+  try {
+    const objetivo = await obterObjetivoFinanceiro();
+    if (!objetivo) {
+      return null;
+    }
+    
+    const saldoAtual = await obterSaldoCofre();
+    const progresso = Math.min((saldoAtual / objetivo.valorObjetivo) * 100, 100);
+    
+    return {
+      objetivo,
+      saldoAtual,
+      progresso: parseFloat(progresso.toFixed(2)),
+      valorRestante: Math.max(objetivo.valorObjetivo - saldoAtual, 0),
+      objetivoAlcancado: saldoAtual >= objetivo.valorObjetivo
+    };
+  } catch (error) {
+    console.error('Erro ao calcular progresso do objetivo:', error);
+    return null;
+  }
+};
+
+// ====================== FUNÇÕES DE SENHA DO COFRE ======================
+
+// Verificar se já existe senha cadastrada
+export const verificarSenhaCofre = async () => {
+  try {
+    const resultado = await executarQuery('SELECT * FROM cofre_senha LIMIT 1');
+    return resultado.length > 0;
+  } catch (error) {
+    console.error('Erro ao verificar senha do cofre:', error);
+    return false;
+  }
+};
+
+// Salvar nova senha do cofre (apenas na primeira vez)
+export const salvarSenhaCofre = async (senha) => {
+  try {
+    if (senha.length !== 4 || !/^\d+$/.test(senha)) {
+      console.error('Senha deve ter exatamente 4 dígitos');
+      return false;
+    }
+
+    // Verificar se já existe senha
+    const jaExiste = await verificarSenhaCofre();
+    if (jaExiste) {
+      console.error('Já existe uma senha cadastrada');
+      return false;
+    }
+
+    await executarComando(
+      'INSERT INTO cofre_senha (senha, dataCriacao) VALUES (?, ?)',
+      [senha, obterDataHoraLocal()]
+    );
+    
+    console.log('Senha do cofre cadastrada com sucesso');
+    return true;
+  } catch (error) {
+    console.error('Erro ao salvar senha do cofre:', error);
+    return false;
+  }
+};
+
+// Validar senha do cofre
+export const validarSenhaCofre = async (senha) => {
+  try {
+    if (senha.length !== 4 || !/^\d+$/.test(senha)) {
+      return false;
+    }
+
+    const resultado = await executarQuery('SELECT senha FROM cofre_senha LIMIT 1');
+    
+    if (resultado.length === 0) {
+      console.error('Nenhuma senha cadastrada');
+      return false;
+    }
+    
+    return resultado[0].senha === senha;
+  } catch (error) {
+    console.error('Erro ao validar senha do cofre:', error);
+    return false;
+  }
+};
+
+// Alterar senha do cofre (funcionalidade futura, se necessário)
+export const alterarSenhaCofre = async (senhaAtual, novaSenha) => {
+  try {
+    if (novaSenha.length !== 4 || !/^\d+$/.test(novaSenha)) {
+      console.error('Nova senha deve ter exatamente 4 dígitos');
+      return false;
+    }
+
+    // Validar senha atual
+    const senhaValida = await validarSenhaCofre(senhaAtual);
+    if (!senhaValida) {
+      console.error('Senha atual incorreta');
+      return false;
+    }
+
+    await executarComando(
+      'UPDATE cofre_senha SET senha = ?, dataModificacao = ? WHERE id = (SELECT id FROM cofre_senha LIMIT 1)',
+      [novaSenha, obterDataHoraLocal()]
+    );
+    
+    console.log('Senha do cofre alterada com sucesso');
+    return true;
+  } catch (error) {
+    console.error('Erro ao alterar senha do cofre:', error);
+    return false;
+  }
+};
+
 // ====================== FUNÇÕES DE CONFIGURAÇÕES ======================
 
 export const salvarConfiguracaoNotificacao = async (configuracao) => {
