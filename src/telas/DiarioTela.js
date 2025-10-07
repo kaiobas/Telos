@@ -36,6 +36,7 @@ const DiarioTela = () => {
   const [entradaEdicao, setEntradaEdicao] = useState(null);
   const [carregando, setCarregando] = useState(true);
   const [atualizando, setAtualizando] = useState(false);
+  const [entradasExpandidas, setEntradasExpandidas] = useState(new Set());
 
   useEffect(() => {
     if (bancoInicializado) {
@@ -283,6 +284,16 @@ const DiarioTela = () => {
     return texto.substring(0, limite) + '...';
   };
 
+  const toggleExpandirTexto = (entradaId) => {
+    const novasExpandidas = new Set(entradasExpandidas);
+    if (novasExpandidas.has(entradaId)) {
+      novasExpandidas.delete(entradaId);
+    } else {
+      novasExpandidas.add(entradaId);
+    }
+    setEntradasExpandidas(novasExpandidas);
+  };
+
 return (
     <View style={estilosGlobais.container}>
         <Header />
@@ -412,9 +423,29 @@ return (
                         </Text>
                         
                         {entrada.conteudo && (
-                            <Text style={estilos.conteudoEntrada}>
-                                {truncarTexto(entrada.conteudo)}
-                            </Text>
+                            <View>
+                                <Text style={estilos.conteudoEntrada}>
+                                    {entradasExpandidas.has(entrada.id) ? entrada.conteudo : truncarTexto(entrada.conteudo)}
+                                </Text>
+                                {entrada.conteudo.length > 150 && (
+                                    <TouchableOpacity
+                                        style={estilos.botaoLerMais}
+                                        onPress={(e) => {
+                                            e.stopPropagation();
+                                            toggleExpandirTexto(entrada.id);
+                                        }}
+                                    >
+                                        <Text style={estilos.textoLerMais}>
+                                            {entradasExpandidas.has(entrada.id) ? 'Ler menos' : 'Ler mais'}
+                                        </Text>
+                                        <Ionicons 
+                                            name={entradasExpandidas.has(entrada.id) ? 'chevron-up' : 'chevron-down'} 
+                                            size={16} 
+                                            color={cores.primaria} 
+                                        />
+                                    </TouchableOpacity>
+                                )}
+                            </View>
                         )}
                     </TouchableOpacity>
                 ))

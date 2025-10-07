@@ -34,7 +34,8 @@ const CalendarioTela = () => {
   const [descricaoEvento, setDescricaoEvento] = useState('');
   const [carregando, setCarregando] = useState(true);
   const [atualizando, setAtualizando] = useState(false);
-  const [todosEventos, setTodosEventos] = useState([]);
+  const [eventosFuturos, setEventosFuturos] = useState([]);
+  const [eventosPassados, setEventosPassados] = useState([]);
 
   useEffect(() => {
     if (bancoInicializado) {
@@ -55,8 +56,9 @@ const CalendarioTela = () => {
       setEventos(eventosCarregados);
       
       // Organizar todos os eventos por proximidade
-      const eventosOrdenados = organizarEventosPorProximidade(eventosCarregados);
-      setTodosEventos(eventosOrdenados);
+      const { eventosFuturos, eventosPassados } = organizarEventosPorProximidade(eventosCarregados);
+      setEventosFuturos(eventosFuturos);
+      setEventosPassados(eventosPassados);
     } catch (error) {
       console.error('Erro ao carregar eventos:', error);
       Alert.alert('Erro', 'Não foi possível carregar os eventos.');
@@ -149,16 +151,25 @@ const CalendarioTela = () => {
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
     
-    return eventos
-      .map(evento => {
-        const dataEvento = new Date(evento.data + 'T00:00:00');
-        return {
-          ...evento,
-          dataObj: dataEvento,
-          diasRestantes: Math.ceil((dataEvento - hoje) / (1000 * 60 * 60 * 24))
-        };
-      })
+    const eventosComInfo = eventos.map(evento => {
+      const dataEvento = new Date(evento.data + 'T00:00:00');
+      return {
+        ...evento,
+        dataObj: dataEvento,
+        diasRestantes: Math.ceil((dataEvento - hoje) / (1000 * 60 * 60 * 24))
+      };
+    });
+
+    // Separar eventos futuros (incluindo hoje) e passados
+    const eventosFuturos = eventosComInfo
+      .filter(evento => evento.diasRestantes >= 0)
       .sort((a, b) => a.dataObj - b.dataObj);
+      
+    const eventosPassados = eventosComInfo
+      .filter(evento => evento.diasRestantes < 0)
+      .sort((a, b) => b.dataObj - a.dataObj); // Mais recentes primeiro
+
+    return { eventosFuturos, eventosPassados };
   };
 
   const ehEventoDeHoje = (dataEvento) => {
@@ -284,12 +295,28 @@ return (
                 />
             </View>
 
-            {/* Todos os Eventos Ordenados por Proximidade */}
+            {/* Próximos Eventos */}
                   <View style={estilosGlobais.cartao}>
-                    <Text style={estilosGlobais.subtitulo}> Próximos Eventos</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                      <Ionicons name="calendar" size={20} color={cores.primaria} />
+                      <Text style={estilosGlobais.subtitulo}>Próximos Eventos</Text>
+                      {eventosFuturos.length > 0 && (
+                        <View style={{
+                          backgroundColor: cores.primaria,
+                          paddingHorizontal: 8,
+                          paddingVertical: 2,
+                          borderRadius: 10,
+                          marginLeft: 4
+                        }}>
+                          <Text style={{ color: cores.fundo, fontSize: 12, fontWeight: '600' }}>
+                            {eventosFuturos.length}
+                          </Text>
+                        </View>
+                      )}
+                    </View>
                     
-                    {todosEventos.length > 0 ? (
-                      todosEventos.map((evento) => (
+                    {eventosFuturos.length > 0 ? (
+                      eventosFuturos.map((evento) => (
                         <View 
                           key={evento.id} 
                           style={[
@@ -334,6 +361,61 @@ return (
                       </View>
                     )}
                   </View>
+
+                  {/* Eventos Passados */}
+                  {eventosPassados.length > 0 && (
+                    <View style={[estilosGlobais.cartao, { marginTop: 16 }]}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                        <Ionicons name="time" size={20} color={cores.textoSecundario} />
+                        <Text style={[estilosGlobais.subtitulo, { color: cores.textoSecundario }]}>
+                          Eventos Passados
+                        </Text>
+                        <View style={{
+                          backgroundColor: cores.textoSecundario,
+                          paddingHorizontal: 8,
+                          paddingVertical: 2,
+                          borderRadius: 10,
+                          marginLeft: 4
+                        }}>
+                          <Text style={{ color: cores.fundo, fontSize: 12, fontWeight: '600' }}>
+                            {eventosPassados.length}
+                          </Text>
+                        </View>
+                      </View>
+                      
+                      {eventosPassados.map((evento) => (
+                        <View 
+                          key={evento.id} 
+                          style={[estilos.itemEventoGeral, estilos.eventoPassado]}
+                        >
+                          <View style={estilos.conteudoEventoGeral}>
+                            <View style={estilos.linhaTitulo}>
+                              <Text style={[estilos.tituloEventoGeral, estilos.tituloEventoPassado]}>
+                                {evento.titulo}
+                              </Text>
+                              <Text style={estilos.tempoRelativoPassado}>
+                                {formatarDataRelativa(evento.diasRestantes)}
+                              </Text>
+                            </View>
+                            {evento.descricao && (
+                              <Text style={[estilos.descricaoEventoGeral, estilos.descricaoEventoPassado]}>
+                                {evento.descricao}
+                              </Text>
+                            )}
+                            <Text style={[estilos.dataEventoGeral, estilos.dataEventoPassado]}>
+                               {formatarData(evento.data)}
+                            </Text>
+                          </View>
+                          <TouchableOpacity
+                            style={estilos.botaoExcluir}
+                            onPress={() => excluirEvento(evento.id)}
+                          >
+                            <Ionicons name="trash-outline" size={20} color={cores.textoSecundario} />
+                          </TouchableOpacity>
+                        </View>
+                      ))}
+                    </View>
+                  )}
                   {/* Espaço extra no final do scroll */}
                   <View style={{ height: 32 }} />
                 </ScrollView>
@@ -590,6 +672,33 @@ const estilos = StyleSheet.create({
   tempoRelativoHoje: {
     color: '#007AFF',
     fontWeight: '600',
+  },
+
+  // Estilos para eventos passados
+  eventoPassado: {
+    backgroundColor: 'rgba(128, 128, 128, 0.05)',
+    borderColor: cores.borda,
+    opacity: 0.85,
+  },
+
+  tituloEventoPassado: {
+    color: cores.textoSecundario,
+    fontWeight: '500',
+  },
+
+  descricaoEventoPassado: {
+    color: cores.textoTerciario,
+  },
+
+  dataEventoPassado: {
+    color: cores.textoTerciario,
+  },
+
+  tempoRelativoPassado: {
+    fontSize: 13,
+    color: cores.textoTerciario,
+    fontWeight: '500',
+    fontStyle: 'italic',
   },
 });
 

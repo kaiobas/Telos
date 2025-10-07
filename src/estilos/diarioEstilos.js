@@ -238,6 +238,23 @@ const estilos = StyleSheet.create({
     height: 250,
     textAlignVertical: 'top',
   },
+
+  // Botão "Ler mais"
+  botaoLerMais: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+    marginTop: 8,
+  },
+
+  textoLerMais: {
+    fontSize: 14,
+    color: cores.primaria,
+    fontWeight: '600',
+    marginRight: 4,
+  },
 });
 
 export default estilos;
