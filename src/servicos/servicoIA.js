@@ -1,4 +1,4 @@
-const API_KEY = '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';
+const API_KEY = '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';
 const API_URL = 'https://api.openai.com/v1/chat/completions';
 
 import { 
