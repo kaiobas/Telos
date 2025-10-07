@@ -20,6 +20,20 @@ export const estilosGlobais = StyleSheet.create({
     backgroundColor: cores.fundo,
     padding: 20,
   },
+
+  conteudo: {
+    flex: 1,
+    padding: 20,
+  },
+
+  // Cabeçalho
+  cabecalho: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingBottom: 12,
+  },
   
   // Textos
   titulo: {
@@ -43,7 +57,7 @@ export const estilosGlobais = StyleSheet.create({
   },
   
   textoPequeno: {
-    fontSize: 14,
+    fontSize: 11,
     color: cores.textoSecundario,
   },
   

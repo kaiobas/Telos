@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import cores from '../estilos/cores';
 
@@ -9,13 +9,15 @@ import cores from '../estilos/cores';
 import CalendarioTela from '../telas/CalendarioTela';
 import DiarioTela from '../telas/DiarioTela';
 import FinancasTela from '../telas/FinancasTela';
+import AlimentacaoTela from '../telas/AlimentacaoTela';
+import AcademiaTela from '../telas/AcademiaTela';
 import ConfiguracoesTela from '../telas/ConfiguracoesTela';
 import CofreTela from '../telas/CofreTela';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
-// Navegador de Tabs Principal
+// Navegador de Tabs Expandido
 const TabNavigator = () => {
   return (
     <Tab.Navigator
@@ -29,6 +31,10 @@ const TabNavigator = () => {
             nomeIcone = focused ? 'book' : 'book-outline';
           } else if (route.name === 'Financas') {
             nomeIcone = focused ? 'wallet' : 'wallet-outline';
+          } else if (route.name === 'Alimentacao') {
+            nomeIcone = focused ? 'restaurant' : 'restaurant-outline';
+          } else if (route.name === 'Academia') {
+            nomeIcone = focused ? 'barbell' : 'barbell-outline';
           } else if (route.name === 'Configuracoes') {
             nomeIcone = focused ? 'settings' : 'settings-outline';
           }
@@ -36,17 +42,17 @@ const TabNavigator = () => {
           return <Ionicons name={nomeIcone} size={size} color={color} />;
         },
         tabBarActiveTintColor: cores.primaria,
-        tabBarInactiveTintColor: cores.textoTerciario,
+        tabBarInactiveTintColor: cores.textoSecundario,
         tabBarStyle: {
           backgroundColor: cores.fundoSecundario,
           borderTopWidth: 1,
           borderTopColor: cores.borda,
-          height: 75,
-          paddingBottom: 18,
+          height: 80,
+          paddingBottom: 20,
           paddingTop: 8,
         },
         tabBarLabelStyle: {
-          fontSize: 12,
+          fontSize: 9,
           fontWeight: '600',
         },
         headerShown: false,
@@ -74,10 +80,24 @@ const TabNavigator = () => {
         }}
       />
       <Tab.Screen 
+        name="Alimentacao" 
+        component={AlimentacaoTela}
+        options={{
+          tabBarLabel: 'Alimentação',
+        }}
+      />
+      <Tab.Screen 
+        name="Academia" 
+        component={AcademiaTela}
+        options={{
+          tabBarLabel: 'Academia',
+        }}
+      />
+      <Tab.Screen 
         name="Configuracoes" 
         component={ConfiguracoesTela}
         options={{
-          tabBarLabel: 'Configurações',
+          tabBarLabel: 'Config',
         }}
       />
     </Tab.Navigator>

@@ -2,20 +2,20 @@ import React from 'react';
 import { View, Text, Image, StyleSheet, Platform } from 'react-native';
 import cores from '../estilos/cores';
 
-const Header = () => {
-return (
+const Header = ({ title }) => {
+  return (
     <View style={estilos.container}>
-        <View style={estilos.conteudo}>
-            <Image
-                source={require('../../assets/icon.png')}
-                style={estilos.icone}
-            />
-            <View style={estilos.tituloContainer}>
-                <Text style={estilos.titulo}>TELOS</Text>
-            </View>
+      <View style={estilos.conteudo}>
+        <Image
+          source={require('../../assets/icon.png')}
+          style={estilos.icone}
+        />
+        <View style={estilos.tituloContainer}>
+          <Text style={estilos.titulo}>{title || 'TELOS'}</Text>
         </View>
+      </View>
     </View>
-);
+  );
 };
 
 const estilos = StyleSheet.create({
