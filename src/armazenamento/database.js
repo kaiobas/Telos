@@ -132,30 +132,6 @@ const criarTabelas = async () => {
       );
     `);
 
-    // Tabela para configurações de notificações
-    await db.execAsync(`
-      CREATE TABLE IF NOT EXISTS notificacoes_config (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        ativo BOOLEAN NOT NULL DEFAULT 0,
-        configuracao TEXT NOT NULL,
-        dataCriacao TEXT NOT NULL,
-        dataModificacao TEXT DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
-
-    // Tabela para horários de notificações
-    await db.execAsync(`
-      CREATE TABLE IF NOT EXISTS notificacoes_horarios (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        hora INTEGER NOT NULL,
-        minuto INTEGER NOT NULL,
-        titulo TEXT NOT NULL,
-        mensagem TEXT NOT NULL,
-        ativo BOOLEAN NOT NULL DEFAULT 1,
-        dataCriacao TEXT NOT NULL,
-        dataModificacao TEXT DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
 
     // Tabela para configurações do app
     await db.execAsync(`
@@ -293,8 +269,7 @@ export const resetarDatabase = async () => {
       DROP TABLE IF EXISTS calendario;
       DROP TABLE IF EXISTS memoria_ia;
       DROP TABLE IF EXISTS conversas_ia;
-      DROP TABLE IF EXISTS notificacoes_config;
-      DROP TABLE IF EXISTS notificacoes_horarios;
+
       DROP TABLE IF EXISTS configuracoes_app;
     `);
     

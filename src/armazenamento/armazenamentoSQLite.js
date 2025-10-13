@@ -951,74 +951,6 @@ export const alterarSenhaCofre = async (senhaAtual, novaSenha) => {
 
 // ====================== FUNÇÕES DE CONFIGURAÇÕES ======================
 
-export const salvarConfiguracaoNotificacao = async (configuracao) => {
-  try {
-    await iniciarTransacao(async () => {
-      // Limpar configurações antigas
-      await executarComando('DELETE FROM notificacoes_config');
-      await executarComando('DELETE FROM notificacoes_horarios');
-      
-      // Salvar configuração principal
-      await executarComando(
-        'INSERT INTO notificacoes_config (ativo, configuracao, dataCriacao) VALUES (?, ?, ?)',
-        [configuracao.ativo ? 1 : 0, JSON.stringify(configuracao), new Date().toISOString()]
-      );
-      
-      // Salvar horários
-      if (configuracao.horarios && configuracao.horarios.length > 0) {
-        for (const horario of configuracao.horarios) {
-          await executarComando(
-            'INSERT INTO notificacoes_horarios (hora, minuto, titulo, mensagem, ativo, dataCriacao) VALUES (?, ?, ?, ?, ?, ?)',
-            [
-              horario.hora,
-              horario.minuto,
-              horario.titulo,
-              horario.mensagem,
-              horario.ativo ? 1 : 0,
-              new Date().toISOString()
-            ]
-          );
-        }
-      }
-    });
-    return true;
-  } catch (error) {
-    console.error('Erro ao salvar configuração de notificação:', error);
-    return false;
-  }
-};
-
-export const carregarConfiguracaoNotificacao = async () => {
-  try {
-    const config = await executarQuery('SELECT * FROM notificacoes_config ORDER BY id DESC LIMIT 1');
-    
-    if (config.length === 0) {
-      return null;
-    }
-    
-    const horarios = await executarQuery('SELECT * FROM notificacoes_horarios ORDER BY hora ASC, minuto ASC');
-    
-    return {
-      ativo: config[0].ativo === 1,
-      horarios: horarios.map(h => ({
-        id: h.id,
-        hora: h.hora,
-        minuto: h.minuto,
-        titulo: h.titulo,
-        mensagem: h.mensagem,
-        ativo: h.ativo === 1
-      }))
-    };
-  } catch (error) {
-    console.error('Erro ao carregar configuração de notificação:', error);
-    return null;
-  }
-};
-
-export const atualizarConfiguracaoNotificacao = async (configuracao) => {
-  return await salvarConfiguracaoNotificacao(configuracao);
-};
-
 export const salvarConfiguracaoApp = async (configuracao) => {
   try {
     await iniciarTransacao(async () => {
@@ -1134,7 +1066,6 @@ export const exportarTodosDados = async () => {
       calendario: await carregarEventosCalendario(),
       memoriaIA: await carregarMemoriaIA(),
       conversasIA: await carregarConversasIA(),
-      notificacoes: await carregarConfiguracaoNotificacao(),
       configuracoes: await carregarConfiguracaoApp(),
       dataExportacao: new Date().toISOString()
     };
@@ -1159,8 +1090,6 @@ export const limparTodosDados = async () => {
       await executarComando('DELETE FROM calendario');
       await executarComando('DELETE FROM memoria_ia');
       await executarComando('DELETE FROM conversas_ia');
-      await executarComando('DELETE FROM notificacoes_config');
-      await executarComando('DELETE FROM notificacoes_horarios');
       await executarComando('DELETE FROM configuracoes_app');
     });
     

@@ -5,7 +5,7 @@ import {
   salvarEventoCalendario,
   salvarMemoriaIA,
   salvarConversaIA,
-  salvarConfiguracaoNotificacao,
+
   salvarConfiguracaoApp
 } from './armazenamentoSQLite';
 
@@ -194,17 +194,7 @@ const migrarDadosIA = async () => {
 // Migrar configurações
 const migrarConfiguracoes = async () => {
   try {
-    // Migrar configurações de notificação
-    const notifConfigString = await AsyncStorage.getItem('configuracao_notificacoes');
-    if (notifConfigString) {
-      try {
-        const config = JSON.parse(notifConfigString);
-        await salvarConfiguracaoNotificacao(config);
-        console.log('🔔 Configurações de notificação migradas');
-      } catch (error) {
-        console.warn('Erro ao migrar configurações de notificação:', error);
-      }
-    }
+
 
     // Migrar outras configurações do app
     const configuracoes = {};
@@ -248,7 +238,7 @@ export const limparAsyncStorageAposMigracao = async () => {
       'eventos_calendario',
       'memoria_ia',
       'conversas_ia',
-      'configuracao_notificacoes',
+
       'tema_app',
       'versao_app',
       'primeira_inicializacao',

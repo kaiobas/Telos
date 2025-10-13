@@ -21,7 +21,6 @@ import {
   excluirEventoCalendario,
   obterEventosPorData 
 } from '../armazenamento/armazenamentoSQLite';
-import { agendarNotificacaoEvento } from '../servicos/notificacoes';
 import { useDatabaseContext } from '../contextos/DatabaseContext';
 
 const CalendarioTela = () => {
@@ -98,12 +97,7 @@ const CalendarioTela = () => {
       const sucesso = await salvarEventoCalendario(novoEvento);
       
       if (sucesso) {
-        // Agendar notificação para o evento (1 dia antes)
-        try {
-          await agendarNotificacaoEvento(novoEvento, 1440);
-        } catch (notifError) {
-          console.log('Notificação do evento não foi agendada:', notifError.message);
-        }
+
         
         await carregarDados();
         setTituloEvento('');

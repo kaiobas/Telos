@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { inicializarDatabase } from '../armazenamento/database';
-import { inicializarNotificacoes } from '../servicos/notificacoes';
+import { criarTabelas } from '../armazenamento/database';
 
 const DatabaseContext = createContext();
 
@@ -38,14 +38,7 @@ export const DatabaseProvider = ({ children }) => {
         console.log('Banco de dados SQLite inicializado');
         
         // Aguardar mais um pouco para garantir que está pronto
-        await new Promise(resolve => setTimeout(resolve, 300));
-        
-        // Inicializar notificações
-        await inicializarNotificacoes();
-        console.log('Sistema de notificações inicializado');
-        
-        // Aguardar final para garantir estabilidade
-        await new Promise(resolve => setTimeout(resolve, 200));
+        await new Promise(resolve => setTimeout(resolve, 500));
         
         setBancoInicializado(true);
       } catch (error) {
