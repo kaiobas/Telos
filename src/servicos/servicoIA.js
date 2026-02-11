@@ -1,4 +1,4 @@
-const API_KEY = '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';
+const API_KEY = 'sua-chave-aqui-espertinho-;)';
 const API_URL = 'https://api.openai.com/v1/chat/completions';
 
 import { 
