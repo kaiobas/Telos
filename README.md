@@ -144,9 +144,6 @@ Este aplicativo foi desenvolvido com foco em:
 4. **Offline-First**: Funciona completamente sem internet
 5. **Escalabilidade**: Estrutura preparada para futuras funcionalidades
 
-## 📱 Screenshots
-
-> *Screenshots serão adicionados após a primeira versão estar completa*
 
 ## 🤝 Contribuição
 
@@ -158,4 +155,4 @@ Este projeto é de uso pessoal e educacional.
 
 ---
 
-**Desenvolvido com ❤️ para organização pessoal e produtividade**
+**Desenvolvido por Kaio Alves para organização pessoal e produtividade**
