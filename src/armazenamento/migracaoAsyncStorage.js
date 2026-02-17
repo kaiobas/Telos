@@ -12,12 +12,9 @@ import {
 // Função principal de migração
 export const migrarDadosAsyncStorageParaSQLite = async () => {
   try {
-    console.log('🔄 Iniciando migração do AsyncStorage para SQLite...');
-    
     // Verificar se a migração já foi feita
     const migracao = await AsyncStorage.getItem('migracaoSQLiteCompleta');
     if (migracao === 'true') {
-      console.log('✅ Migração já foi realizada anteriormente');
       return true;
     }
 
@@ -45,7 +42,6 @@ export const migrarDadosAsyncStorageParaSQLite = async () => {
     // Marcar migração como completa
     await AsyncStorage.setItem('migracaoSQLiteCompleta', 'true');
     
-    console.log(`✅ Migração completa! ${totalMigrados} itens migrados com sucesso`);
     return true;
   } catch (error) {
     console.error('❌ Erro na migração:', error);
@@ -75,7 +71,6 @@ const migrarEntradasDiario = async () => {
       }
     }
 
-    console.log(`📓 Diário: ${migradas} entradas migradas`);
     return migradas;
   } catch (error) {
     console.warn('Erro ao migrar entradas do diário:', error);
@@ -107,7 +102,6 @@ const migrarTransacoesFinanceiras = async () => {
       }
     }
 
-    console.log(`💰 Finanças: ${migradas} transações migradas`);
     return migradas;
   } catch (error) {
     console.warn('Erro ao migrar transações financeiras:', error);
@@ -138,7 +132,6 @@ const migrarEventosCalendario = async () => {
       }
     }
 
-    console.log(`📅 Calendário: ${migrados} eventos migrados`);
     return migrados;
   } catch (error) {
     console.warn('Erro ao migrar eventos do calendário:', error);
@@ -183,7 +176,6 @@ const migrarDadosIA = async () => {
       }
     }
 
-    console.log(`🤖 IA: ${migrados} itens migrados`);
     return migrados;
   } catch (error) {
     console.warn('Erro ao migrar dados da IA:', error);
@@ -222,7 +214,6 @@ const migrarConfiguracoes = async () => {
 
     if (Object.keys(configuracoes).length > 0) {
       await salvarConfiguracaoApp(configuracoes);
-      console.log('⚙️ Configurações do app migradas');
     }
   } catch (error) {
     console.warn('Erro ao migrar configurações:', error);
@@ -249,7 +240,6 @@ export const limparAsyncStorageAposMigracao = async () => {
       await AsyncStorage.removeItem(chave);
     }
 
-    console.log('🧹 Dados antigos do AsyncStorage removidos');
     return true;
   } catch (error) {
     console.error('Erro ao limpar AsyncStorage:', error);

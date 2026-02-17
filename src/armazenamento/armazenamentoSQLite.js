@@ -16,7 +16,6 @@ const obterDataHoraLocal = () => {
   
   // Retornar no formato ISO mas com horário local
   const dataHoraLocal = `${ano}-${mes}-${dia}T${horas}:${minutos}:${segundos}.${milissegundos}`;
-  console.log(`🕒 Data/hora local gerada: ${dataHoraLocal} (Horas: ${horas}, Minutos: ${minutos})`);
   return dataHoraLocal;
 };
 
@@ -260,7 +259,6 @@ export const excluirTransacaoSemAtualizarHistorico = async (id) => {
 // Função para limpar transações e forçar atualização do histórico (apenas para meses NÃO fechados)
 export const limparTransacoesEAtualizarHistorico = async (ano, mes) => {
   try {
-    console.log(`🧹 Limpando transações e forçando atualização para ${mes}/${ano}...`);
     await forcarAtualizacaoHistorico(ano, mes);
     return true;
   } catch (error) {
@@ -272,8 +270,6 @@ export const limparTransacoesEAtualizarHistorico = async (ano, mes) => {
 // Função para atualizar histórico mensal
 const atualizarHistoricoMensal = async (ano, mes) => {
   try {
-    console.log(`Atualizando histórico para ${mes}/${ano}...`);
-    
     // Calcular totais do mês
     const receitas = await executarQuery(
       'SELECT COALESCE(SUM(valor), 0) as total FROM financas WHERE tipo = "receita" AND strftime("%Y", data) = ? AND strftime("%m", data) = ?',
@@ -288,8 +284,6 @@ const atualizarHistoricoMensal = async (ano, mes) => {
     const totalReceitas = parseFloat(receitas[0].total) || 0;
     const totalDespesas = parseFloat(despesas[0].total) || 0;
     const saldo = totalReceitas - totalDespesas;
-    
-    console.log(`Totais calculados - Receitas: ${totalReceitas}, Despesas: ${totalDespesas}, Saldo: ${saldo}`);
     
     // Inserir ou atualizar histórico
     const resultado = await executarComando(
@@ -298,8 +292,6 @@ const atualizarHistoricoMensal = async (ano, mes) => {
        VALUES (?, ?, ?, ?, ?, COALESCE((SELECT dataCriacao FROM financas_historico WHERE ano = ? AND mes = ?), ?), ?)`,
       [ano, mes, totalReceitas, totalDespesas, saldo, ano, mes, new Date().toISOString(), new Date().toISOString()]
     );
-    
-    console.log(`Histórico atualizado. Resultado:`, resultado);
   } catch (error) {
     console.error('Erro ao atualizar histórico mensal:', error);
   }
@@ -308,8 +300,6 @@ const atualizarHistoricoMensal = async (ano, mes) => {
 // Função para forçar recálculo do histórico (usada apenas quando necessário)
 const forcarAtualizacaoHistorico = async (ano, mes) => {
   try {
-    console.log(`🔄 FORÇANDO atualização do histórico para ${mes}/${ano}...`);
-    
     // Calcular totais do mês
     const receitas = await executarQuery(
       'SELECT COALESCE(SUM(valor), 0) as total FROM financas WHERE tipo = "receita" AND strftime("%Y", data) = ? AND strftime("%m", data) = ?',
@@ -325,8 +315,6 @@ const forcarAtualizacaoHistorico = async (ano, mes) => {
     const totalDespesas = parseFloat(despesas[0].total) || 0;
     const saldo = totalReceitas - totalDespesas;
     
-    console.log(`Totais FORÇADOS - Receitas: ${totalReceitas}, Despesas: ${totalDespesas}, Saldo: ${saldo}`);
-    
     // Forçar atualização
     const resultado = await executarComando(
       `INSERT OR REPLACE INTO financas_historico 
@@ -334,8 +322,6 @@ const forcarAtualizacaoHistorico = async (ano, mes) => {
        VALUES (?, ?, ?, ?, ?, COALESCE((SELECT dataCriacao FROM financas_historico WHERE ano = ? AND mes = ?), ?), ?)`,
       [ano, mes, totalReceitas, totalDespesas, saldo, ano, mes, new Date().toISOString(), new Date().toISOString()]
     );
-    
-    console.log(`🔄 Histórico FORÇADO. Resultado:`, resultado);
   } catch (error) {
     console.error('Erro ao forçar atualização do histórico:', error);
   }
@@ -346,8 +332,6 @@ export const carregarHistoricoFinanceiro = async () => {
     const historico = await executarQuery(
       'SELECT * FROM financas_historico ORDER BY ano DESC, mes DESC'
     );
-    
-    console.log('Histórico bruto do banco:', historico);
     
     const mesesNomes = [
       'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
@@ -366,8 +350,6 @@ export const carregarHistoricoFinanceiro = async () => {
         totalDespesas: parseFloat(item.totalDespesas) || 0,
         saldo: parseFloat(item.saldo) || 0
       }));
-    
-    console.log('Histórico formatado e filtrado:', historicoFormatado);
     
     return historicoFormatado;
   } catch (error) {
@@ -404,8 +386,6 @@ export const carregarHistoricoMensal = async (ano, mes) => {
 // Função para preservar histórico do mês antes de limpeza
 export const preservarHistoricoMensal = async (ano, mes, totaisCalculados = null) => {
   try {
-    console.log(`📅 Preservando histórico para ${mes}/${ano}...`);
-    
     // Verificar se já existe um registro para este mês/ano
     const registroExistente = await executarQuery(
       'SELECT * FROM financas_historico WHERE ano = ? AND mes = ?',
@@ -413,8 +393,6 @@ export const preservarHistoricoMensal = async (ano, mes, totaisCalculados = null
     );
     
     if (registroExistente.length > 0) {
-      console.log(`⚠️ Já existe histórico para ${mes}/${ano} - NÃO sobrescrevendo`);
-      console.log(`Registro existente:`, registroExistente[0]);
       return false; // Não permitir sobrescrever
     }
     
@@ -425,15 +403,12 @@ export const preservarHistoricoMensal = async (ano, mes, totaisCalculados = null
       totalReceitas = totaisCalculados.totalReceitas;
       totalDespesas = totaisCalculados.totalDespesas;
       saldo = totaisCalculados.saldo;
-      console.log(`💰 Usando totais pré-calculados - Receitas: ${totalReceitas}, Despesas: ${totalDespesas}, Saldo: ${saldo}`);
     } else {
       // Verificar se há transações para o mês
       const transacoes = await executarQuery(
         'SELECT * FROM financas WHERE strftime("%Y", data) = ? AND strftime("%m", data) = ?',
         [ano.toString(), mes.toString().padStart(2, '0')]
       );
-      
-      console.log(`Encontradas ${transacoes.length} transações para preservar`);
       
       // Calcular totais das transações existentes
       const receitas = await executarQuery(
@@ -449,7 +424,6 @@ export const preservarHistoricoMensal = async (ano, mes, totaisCalculados = null
       totalReceitas = parseFloat(receitas[0].total) || 0;
       totalDespesas = parseFloat(despesas[0].total) || 0;
       saldo = totalReceitas - totalDespesas;
-      console.log(`💰 Totais calculados no banco - Receitas: ${totalReceitas}, Despesas: ${totalDespesas}, Saldo: ${saldo}`);
     }
     
     // Salvar histórico APENAS como novo registro (INSERT sem REPLACE)
@@ -466,9 +440,6 @@ export const preservarHistoricoMensal = async (ano, mes, totaisCalculados = null
       [ano, mes]
     );
     
-    console.log(`✅ NOVO histórico criado para ${mes}/${ano}:`, historicoSalvo);
-    console.log(`✅ Resultado da inserção:`, resultado);
-    
     return true;
   } catch (error) {
     console.error('Erro ao preservar histórico mensal:', error);
@@ -479,19 +450,13 @@ export const preservarHistoricoMensal = async (ano, mes, totaisCalculados = null
 // Função para excluir registro específico do histórico
 export const excluirRegistroHistorico = async (ano, mes) => {
   try {
-    console.log(`Tentando excluir histórico para ano: ${ano}, mes: ${mes}`);
-    console.log(`Tipos dos parâmetros - ano: ${typeof ano}, mes: ${typeof mes}`);
-    
     // Verificar se o registro existe antes de excluir
     const registroExistente = await executarQuery(
       'SELECT * FROM financas_historico WHERE ano = ? AND mes = ?',
       [ano, mes]
     );
     
-    console.log(`Registro encontrado para exclusão:`, registroExistente);
-    
     if (registroExistente.length === 0) {
-      console.log('Nenhum registro encontrado para exclusão');
       return false;
     }
     
@@ -499,9 +464,6 @@ export const excluirRegistroHistorico = async (ano, mes) => {
       'DELETE FROM financas_historico WHERE ano = ? AND mes = ?',
       [ano, mes]
     );
-    
-    console.log(`Resultado da exclusão:`, resultado);
-    console.log(`Registros afetados: ${resultado.changes}`);
     
     return resultado.changes > 0;
   } catch (error) {
@@ -633,7 +595,6 @@ export const inicializarCofre = async () => {
         'INSERT INTO cofre (saldoTotal, dataCriacao) VALUES (?, ?)',
         [0, obterDataHoraLocal()]
       );
-      console.log('Cofre inicializado com saldo zero');
     }
     
     return true;
@@ -686,7 +647,6 @@ export const depositarNoCofre = async (valor, descricao = '') => {
       );
     });
     
-    console.log(`Depósito realizado: +${valor}. Saldo: ${saldoAtual} → ${novoSaldo}`);
     return true;
   } catch (error) {
     console.error('Erro ao depositar no cofre:', error);
@@ -725,7 +685,6 @@ export const retirarDoCofre = async (valor, descricao = '') => {
       );
     });
     
-    console.log(`Retirada realizada: -${valor}. Saldo: ${saldoAtual} → ${novoSaldo}`);
     return true;
   } catch (error) {
     console.error('Erro ao retirar do cofre:', error);
@@ -758,7 +717,6 @@ export const carregarHistoricoCofre = async (limite = 50) => {
 export const limparHistoricoCofre = async () => {
   try {
     const resultado = await executarComando('DELETE FROM cofre_historico');
-    console.log(`${resultado.changes} registros de histórico do cofre foram excluídos`);
     return resultado.changes > 0;
   } catch (error) {
     console.error('Erro ao limpar histórico do cofre:', error);
@@ -795,7 +753,6 @@ export const salvarObjetivoFinanceiro = async (valorObjetivo, descricao = '') =>
       }
     });
     
-    console.log(`Objetivo financeiro salvo: ${valorObjetivo}`);
     return true;
   } catch (error) {
     console.error('Erro ao salvar objetivo financeiro:', error);
@@ -827,7 +784,6 @@ export const obterObjetivoFinanceiro = async () => {
 export const excluirObjetivoFinanceiro = async () => {
   try {
     const resultado = await executarComando('DELETE FROM cofre_objetivo');
-    console.log('Objetivo financeiro excluído');
     return resultado.changes > 0;
   } catch (error) {
     console.error('Erro ao excluir objetivo financeiro:', error);
@@ -892,7 +848,6 @@ export const salvarSenhaCofre = async (senha) => {
       [senha, obterDataHoraLocal()]
     );
     
-    console.log('Senha do cofre cadastrada com sucesso');
     return true;
   } catch (error) {
     console.error('Erro ao salvar senha do cofre:', error);
@@ -941,7 +896,6 @@ export const alterarSenhaCofre = async (senhaAtual, novaSenha) => {
       [novaSenha, obterDataHoraLocal()]
     );
     
-    console.log('Senha do cofre alterada com sucesso');
     return true;
   } catch (error) {
     console.error('Erro ao alterar senha do cofre:', error);
@@ -1070,10 +1024,6 @@ export const exportarTodosDados = async () => {
       dataExportacao: new Date().toISOString()
     };
     
-    console.log('=== BACKUP DOS DADOS TELOS ===');
-    console.log(JSON.stringify(dados, null, 2));
-    console.log('=== FIM DO BACKUP ===');
-    
     return dados;
   } catch (error) {
     console.error('Erro ao exportar dados:', error);
@@ -1093,7 +1043,6 @@ export const limparTodosDados = async () => {
       await executarComando('DELETE FROM configuracoes_app');
     });
     
-    console.log('Todos os dados foram limpos');
     return true;
   } catch (error) {
     console.error('Erro ao limpar dados:', error);

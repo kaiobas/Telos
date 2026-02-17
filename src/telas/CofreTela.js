@@ -60,7 +60,6 @@ const CofreTela = ({ navigation }) => {
 
   const carregarDados = async () => {
     if (!bancoInicializado) {
-      console.log('Banco não inicializado, pulando carregamento');
       return;
     }
 

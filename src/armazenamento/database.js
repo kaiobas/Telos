@@ -11,7 +11,6 @@ let inicializando = false;
 export const inicializarDatabase = async () => {
   // Evitar múltiplas inicializações simultâneas
   if (inicializando) {
-    console.log('Banco de dados já está sendo inicializado, aguardando...');
     while (inicializando) {
       await new Promise(resolve => setTimeout(resolve, 100));
     }
@@ -19,7 +18,6 @@ export const inicializarDatabase = async () => {
   }
 
   if (database) {
-    console.log('Banco de dados já está inicializado');
     return true;
   }
 
@@ -31,7 +29,6 @@ export const inicializarDatabase = async () => {
     await database.execAsync('PRAGMA foreign_keys = ON');
     
     await criarTabelas();
-    console.log('Banco de dados inicializado com sucesso');
     return true;
   } catch (error) {
     console.error('Erro ao inicializar banco de dados:', error);
@@ -196,8 +193,6 @@ const criarTabelas = async () => {
       CREATE INDEX IF NOT EXISTS idx_calendario_data ON calendario(data);
       CREATE INDEX IF NOT EXISTS idx_historico_ano_mes ON financas_historico(ano, mes);
     `);
-
-    console.log('Tabelas criadas com sucesso');
   } catch (error) {
     console.error('Erro ao criar tabelas:', error);
     throw error;
@@ -275,7 +270,6 @@ export const resetarDatabase = async () => {
     
     // Recriar tabelas
     await criarTabelas();
-    console.log('Banco de dados resetado com sucesso');
     return true;
   } catch (error) {
     console.error('Erro ao resetar banco de dados:', error);
@@ -289,7 +283,6 @@ export const fecharDatabase = async () => {
     if (database) {
       await database.closeAsync();
       database = null;
-      console.log('Banco de dados fechado');
     }
   } catch (error) {
     console.error('Erro ao fechar banco de dados:', error);

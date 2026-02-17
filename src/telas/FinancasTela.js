@@ -84,7 +84,6 @@ const FinancasTela = ({ navigation }) => {
 
   const carregarDados = async () => {
     if (!bancoInicializado) {
-      console.log('Banco não inicializado, pulando carregamento');
       return;
     }
     
@@ -96,20 +95,14 @@ const FinancasTela = ({ navigation }) => {
       
       // Carregar transações do mês/ano selecionado
       const todasTransacoes = await carregarTransacoesFinanceiras();
-      console.log(`🔍 Filtrando transações para ${mesSelecionado}/${anoSelecionado}`);
-      console.log(`📊 Total de transações encontradas: ${todasTransacoes.length}`);
       
       const transacoesDoMes = todasTransacoes.filter(transacao => {
         const dataTransacao = new Date(transacao.data + 'T12:00:00'); // Adicionar horário para evitar problemas de fuso
         const anoTransacao = dataTransacao.getFullYear();
         const mesTransacao = dataTransacao.getMonth() + 1; // getMonth() retorna 0-11, então +1
         
-        console.log(`📅 Transação: ${transacao.data} -> Ano: ${anoTransacao}, Mês: ${mesTransacao}`);
-        
         return anoTransacao === anoSelecionado && mesTransacao === mesSelecionado;
       });
-      
-      console.log(`✅ Transações filtradas para ${mesSelecionado}/${anoSelecionado}: ${transacoesDoMes.length}`);
       
       const historicoCarregado = await carregarHistoricoFinanceiro();
       
@@ -147,8 +140,6 @@ const FinancasTela = ({ navigation }) => {
       // Formato: YYYY-MM-DD (sempre dia 15 para evitar problemas de fuso horário)
       const mesFormatado = mesSelecionado.toString().padStart(2, '0');
       const dataFormatada = `${anoSelecionado}-${mesFormatado}-15`;
-      
-      console.log(`📅 Criando transação para: ${dataFormatada} (Mês selecionado: ${mesSelecionado})`);
       
       const novaTransacao = {
         descricao: descricao.trim(),
@@ -254,9 +245,6 @@ const FinancasTela = ({ navigation }) => {
             try {
               const { totalReceitas, totalDespesas, saldo } = calcularResumo();
               
-              console.log(`💾 Salvando histórico para ${mesSelecionado}/${anoSelecionado}`);
-              console.log(`📊 Resumo - Receitas: ${totalReceitas}, Despesas: ${totalDespesas}, Saldo: ${saldo}`);
-              
               // Salvar o histórico do mês selecionado
               const sucesso = await preservarHistoricoMensal(anoSelecionado, mesSelecionado, {
                 totalReceitas,
@@ -281,15 +269,9 @@ const FinancasTela = ({ navigation }) => {
   };
 
   const excluirRegistroHistorico = (index) => {
-    console.log('Tentando excluir registro no índice:', index);
-    console.log('Array historicoMeses:', historicoMeses);
-    console.log('Tamanho do array:', historicoMeses.length);
-    
     const registroParaExcluir = historicoMeses[index];
-    console.log('Registro encontrado:', registroParaExcluir);
     
     if (!registroParaExcluir) {
-      console.log('Registro não encontrado no índice:', index);
       Alert.alert('Erro', 'Registro não encontrado.');
       return;
     }
@@ -304,8 +286,6 @@ const FinancasTela = ({ navigation }) => {
           style: 'destructive',
           onPress: async () => {
             try {
-              console.log('Excluindo registro:', registroParaExcluir.ano, registroParaExcluir.mesNumerico);
-              
               // Excluir registro específico do histórico SQLite
               const sucesso = await excluirRegistroHistoricoSQLite(registroParaExcluir.ano, registroParaExcluir.mesNumerico);
               
